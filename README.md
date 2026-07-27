@@ -298,7 +298,7 @@ Todos os dados estão em `src/JSONs/dbSalao.json` e podem ser editados.
 Este projeto é fornecido como está para fins educacionais.
 
 ## 👤 Autor
-
+Pablo Henry
 Desenvolvido como exercício de integração de múltiplos endpoints REST com dashboard e CRUD.
 
 ---
