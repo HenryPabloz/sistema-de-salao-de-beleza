@@ -116,6 +116,7 @@ O projeto segue um **Design System luxuoso** com paleta escura e destaque em ama
 ### Clientes
 - Listagem com busca em tempo real
 - Cadastro/edição com máscaras de CPF e telefone
+- Campo de email (obrigatório e validado), usado nos lembretes de agendamento por EmailJS
 - Soft delete (inativar/reativar em vez de excluir)
 - Validação de duplicatas de CPF
 
@@ -146,6 +147,88 @@ O projeto segue um **Design System luxuoso** com paleta escura e destaque em ama
 ## 🌐 Tema claro/escuro
 
 O botão de tema está no rodapé da sidebar. A preferência é salva em `localStorage` e aplicada automaticamente no carregamento de cada página (antes da primeira pintura, sem flash).
+
+## 📧 Lembretes por Email (EmailJS)
+
+O projeto integra **EmailJS** (envio de email direto do navegador, sem
+back-end) à página de Agendamentos para dois disparos automáticos:
+
+1. **Confirmação imediata** — ao salvar um novo agendamento, o cliente
+   recebe um email confirmando profissional, serviço, data e hora.
+2. **Lembrete 1h antes** — o sistema agenda com `setTimeout` o envio de um
+   segundo email exatamente 1 hora antes do horário marcado.
+
+### 🚀 Como configurar
+
+1. Crie uma conta gratuita em [EmailJS](https://www.emailjs.com/).
+2. Em **Email Services**, adicione seu provedor (ex.: Gmail) e copie o
+   **Service ID** gerado.
+3. Em **Email Templates**, crie dois templates (confirmação e lembrete)
+   usando estas variáveis no conteúdo/assunto: `{{nomeCliente}}`,
+   `{{nomeProfissional}}`, `{{nomeServico}}`, `{{duracao}}`, `{{data}}`,
+   `{{hora}}`. No campo **To Email** (aba "Settings" do editor, não é o
+   corpo do email), preencha `{{to_email}}` — sem isso o EmailJS não sabe
+   pra quem mandar.
+   > ⚠️ **Atenção**: o nome que você dá ao template (ex.: "Confirmação de
+   > agendamento") é só um rótulo de exibição — **não é** o ID usado pela
+   > API. O ID real (algo como `template_w90z3tt`) é gerado
+   > automaticamente pelo EmailJS e aparece na URL do editor do template
+   > (`dashboard.emailjs.com/admin/templates/<ID>`). É esse ID que vai nas
+   > constantes `EMAILJS_TEMPLATE_CONFIRMACAO`/`EMAILJS_TEMPLATE_LEMBRETE`.
+4. Em **Account → API**, copie sua **Public Key**.
+5. Em `JS/agendamentos.js`, preencha as três constantes no topo do arquivo:
+   `EMAILJS_SERVICE_ID`, `EMAILJS_PUBLIC_KEY` e (se você renomear os
+   templates) `EMAILJS_TEMPLATE_CONFIRMACAO`/`EMAILJS_TEMPLATE_LEMBRETE`.
+
+> ⚠️ **Por que não existe `emailjs.init()` num `<script>` no HTML**: a CSP do
+> projeto (`script-src 'self' https://cdn.jsdelivr.net`) bloqueia scripts
+> inline de propósito (é a defesa contra XSS — ver seção "🔐 Segurança"). Por
+> isso a Public Key é passada diretamente como 4º argumento de
+> `emailjs.send(...)` em `agendamentos.js`, um arquivo externo, em vez de
+> depender de `emailjs.init()` num bloco inline (que seria bloqueado
+> silenciosamente e faria os emails falharem sem erro visível na tela).
+
+### ⚙️ Como funciona
+
+- Cada cliente agora tem um campo **Email** obrigatório (cadastrado em
+  Clientes, validado com a mesma regex de `validaEmailEstrutural()` em
+  `utils.js`).
+- Ao salvar um agendamento **novo**, o sistema primeiro confere se o
+  cliente selecionado tem um email válido — se não tiver, bloqueia com um
+  aviso antes de gravar. Em seguida dispara o email de confirmação e
+  agenda o lembrete via `agendarLembreteEmail()`.
+- Se o agendamento for **cancelado**, o timer do lembrete pendente é
+  cancelado (`cancelarLembreteEmail()`), evitando notificar um horário que
+  não existe mais.
+- Falhas de envio (ex.: EmailJS fora do ar) são só logadas no console — não
+  impedem o agendamento de ser salvo.
+
+### ⚠️ Limitações
+
+- **Tier gratuito EmailJS**: 200 emails/mês.
+- **Lembretes só funcionam com a aba aberta**: como usam `setTimeout` no
+  navegador, recarregar ou fechar a página cancela os lembretes pendentes.
+  Em produção, isso exigiria um back-end com cron job.
+- A edição de um agendamento existente não reenvia confirmação nem
+  reagenda o lembrete (só a criação de um agendamento novo dispara).
+
+### 🐛 Email não chega (mesmo com credenciais corretas)
+
+Como a falha só é logada no console (não trava o agendamento), abra o
+DevTools → Console ao testar. Causas comuns:
+
+- **CSP bloqueando script inline** — já corrigido: a Public Key é passada
+  direto em `emailjs.send(...)`, não via `emailjs.init()` num `<script>`
+  solto no HTML (que a CSP deste projeto bloqueia silenciosamente).
+- **Allowlist de domínio no EmailJS** — em Dashboard → Account → Security,
+  se a opção de restringir por domínio estiver ativa, o domínio de onde
+  você está testando (ex.: `http://127.0.0.1:5500`) precisa estar na lista.
+- **Template ID errado** — erro típico: `"The template ID not found"`.
+  Copie o ID real do template (visível na URL do editor,
+  `dashboard.emailjs.com/admin/templates/<ID>`), não o nome de exibição
+  que você deu a ele — são coisas diferentes no EmailJS.
+- **Service desconectado** — em Email Services, confirme que o status do
+  serviço (Gmail, etc.) está "Connected", não "Disconnected".
 
 ## 📱 Responsividade
 
@@ -185,7 +268,7 @@ pela API (ex.: via `curl` ou DevTools), pulando o formulário.
   style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
   font-src https://fonts.gstatic.com;
   img-src 'self' data:;
-  connect-src 'self' http://localhost:3000;
+  connect-src 'self' http://localhost:3000 https://api.emailjs.com;
   object-src 'none';
   base-uri 'self';
   ```
@@ -194,6 +277,10 @@ pela API (ex.: via `curl` ou DevTools), pulando o formulário.
   - `connect-src` inclui `http://localhost:3000` — sem isso **nenhuma**
     chamada `fetch` ao json-server funcionaria, e o site inteiro pareceria
     quebrado.
+  - `connect-src` também inclui `https://api.emailjs.com`, exclusivamente em
+    `agendamentos.html` — é o endpoint que o SDK do EmailJS chama para
+    disparar os emails de confirmação e lembrete (ver seção
+    "📧 Lembretes por Email" acima).
   - `style-src 'unsafe-inline'` é necessário porque GSAP, Anime.js e as
     barras de progresso do projeto animam estilos inline (`element.style.*`)
     — é assim que essas bibliotecas funcionam. `script-src` **não** tem
@@ -298,6 +385,7 @@ Todos os dados estão em `src/JSONs/dbSalao.json` e podem ser editados.
 Este projeto é fornecido como está para fins educacionais.
 
 ## 👤 Autor
+Pablo Henry
 
 Desenvolvido como exercício de integração de múltiplos endpoints REST com dashboard e CRUD.
 

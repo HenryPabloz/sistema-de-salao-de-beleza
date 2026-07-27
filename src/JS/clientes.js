@@ -162,6 +162,7 @@ function mostrarFormularioCliente(clienteParaEditar) {
     limparErroCampo(document.getElementById('campoNomeCliente'));
     limparErroCampo(document.getElementById('campoCpfCliente'));
     limparErroCampo(document.getElementById('campoTelefoneCliente'));
+    limparErroCampo(document.getElementById('campoEmailCliente'));
 
     if (clienteParaEditar) {
         document.getElementById('tituloFormularioCliente').textContent = 'Editar cliente';
@@ -169,6 +170,7 @@ function mostrarFormularioCliente(clienteParaEditar) {
         document.getElementById('campoNomeCliente').value = clienteParaEditar.nome;
         document.getElementById('campoCpfCliente').value = formataCPF(clienteParaEditar.cpf);
         document.getElementById('campoTelefoneCliente').value = formataTelefone(clienteParaEditar.telefone);
+        document.getElementById('campoEmailCliente').value = clienteParaEditar.email;
     } else {
         document.getElementById('tituloFormularioCliente').textContent = 'Novo cliente';
         document.getElementById('clienteIdEditando').value = '';
@@ -203,14 +205,17 @@ function validarFormularioCliente() {
     const campoNome = document.getElementById('campoNomeCliente');
     const campoCpf = document.getElementById('campoCpfCliente');
     const campoTelefone = document.getElementById('campoTelefoneCliente');
+    const campoEmail = document.getElementById('campoEmailCliente');
 
     limparErroCampo(campoNome);
     limparErroCampo(campoCpf);
     limparErroCampo(campoTelefone);
+    limparErroCampo(campoEmail);
 
     const nome = campoNome.value.trim();
     const cpf = campoCpf.value;
     const telefone = campoTelefone.value;
+    const email = campoEmail.value.trim();
 
     if (campoPreenchido(nome) === false) {
         exibirErroCampo(campoNome, 'Nome é obrigatório');
@@ -239,6 +244,14 @@ function validarFormularioCliente() {
         formularioValido = false;
     }
 
+    if (campoPreenchido(email) === false) {
+        exibirErroCampo(campoEmail, 'Email é obrigatório');
+        formularioValido = false;
+    } else if (validaEmailEstrutural(email) === false) {
+        exibirErroCampo(campoEmail, 'Digite um email no formato seu@email.com');
+        formularioValido = false;
+    }
+
     return formularioValido;
 }
 
@@ -254,6 +267,7 @@ async function salvarCliente(evento) {
     const nome = document.getElementById('campoNomeCliente').value.trim();
     const cpf = document.getElementById('campoCpfCliente').value.replace(/\D/g, '');
     const telefone = document.getElementById('campoTelefoneCliente').value.replace(/\D/g, '');
+    const email = document.getElementById('campoEmailCliente').value.trim();
 
     const botaoSalvar = document.getElementById('botaoSalvarCliente');
     botaoSalvar.disabled = true;
@@ -272,6 +286,7 @@ async function salvarCliente(evento) {
                 nome: nome,
                 cpf: cpf,
                 telefone: telefone,
+                email: email,
                 ativo: true
             };
 
@@ -286,6 +301,7 @@ async function salvarCliente(evento) {
                 nome: nome,
                 cpf: cpf,
                 telefone: telefone,
+                email: email,
                 ativo: clienteExistente.ativo
             };
 

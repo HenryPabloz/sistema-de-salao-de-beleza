@@ -114,6 +114,7 @@
               <thead>
                 <tr>
                   <th>Nome</th>
+                  <th>Especialidade</th>
                   <th>Duração</th>
                   <th>Preço</th>
                   <th>Ações</th>
@@ -150,6 +151,19 @@
             <label for="campoNomeServico">Nome</label>
             <input type="text" id="campoNomeServico" name="nome" class="input-field" placeholder="Ex: Corte feminino, Manicure completa...">
             <span class="mensagem-erro" id="erroNomeServico">Nome é obrigatório</span>
+          </div>
+
+          <div class="form-group">
+            <label for="campoEspecialidadeServico">Especialidade</label>
+            <select id="campoEspecialidadeServico" name="especialidade" class="input-field">
+              <option value="">Selecione uma especialidade</option>
+              <option value="cabeleireiro">Cabeleireiro</option>
+              <option value="manicure">Manicure</option>
+              <option value="esteticista">Esteticista</option>
+              <option value="maquiador">Maquiador</option>
+            </select>
+            <span class="texto-auxiliar">Só profissionais dessa especialidade poderão receber este serviço num agendamento.</span>
+            <span class="mensagem-erro" id="erroEspecialidadeServico">Especialidade é obrigatória</span>
           </div>
 
           <div class="formulario-servico__linha">

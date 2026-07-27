@@ -6,6 +6,7 @@
       "nome": "Marina Souza Lima",
       "cpf": "12345678901",
       "telefone": "11987654321",
+      "email": "marina.lima@email.com",
       "ativo": true
     },
     {
@@ -14,6 +15,7 @@
       "nome": "Rafael Andrade Costa",
       "cpf": "23456789012",
       "telefone": "21976543210",
+      "email": "rafael.costa@email.com",
       "ativo": true
     },
     {
@@ -22,6 +24,7 @@
       "nome": "Beatriz Fernandes Rocha",
       "cpf": "34567890123",
       "telefone": "11965432109",
+      "email": "beatriz.rocha@email.com",
       "ativo": false
     },
     {
@@ -30,6 +33,7 @@
       "nome": "Thiago Martins Alves",
       "cpf": "45678901234",
       "telefone": "1132165498",
+      "email": "thiago.alves@email.com",
       "ativo": true
     },
     {
@@ -37,6 +41,7 @@
       "nome": "Camila Ribeiro Duarte",
       "cpf": "56789012345",
       "telefone": "21987651235",
+      "email": "camila.duarte@email.com",
       "ativo": true,
       "id": "cliente-5"
     },
@@ -46,6 +51,7 @@
       "nome": "Eduardo Nogueira Pinto",
       "cpf": "67890123456",
       "telefone": "11998877665",
+      "email": "eduardo.pinto@email.com",
       "ativo": false
     },
     {
@@ -53,6 +59,7 @@
       "nome": "Pablo Henry",
       "cpf": "37828141646",
       "telefone": "11946928887",
+      "email": "pablo.henry@email.com",
       "ativo": true,
       "id": "mzTnBjG68Ks"
     },
@@ -61,6 +68,7 @@
       "nome": "Aline Souto",
       "cpf": "36798765456",
       "telefone": "11998765439",
+      "email": "aline.souto@email.com",
       "ativo": true,
       "id": "hNMPIbQ9yFk"
     },
@@ -69,8 +77,36 @@
       "nome": "Laura Martins",
       "cpf": "34560987656",
       "telefone": "1199876547",
-      "ativo": true,
+      "email": "laura.martins@email.com",
+      "ativo": false,
       "id": "EzQzbyJd1mA"
+    },
+    {
+      "idCliente": 10,
+      "nome": "Pablo Martins",
+      "cpf": "37827812345",
+      "telefone": "11946928887",
+      "email": "pablohenryfariasmartins@gmail.com",
+      "ativo": true,
+      "id": "uzh-scdnVRo"
+    },
+    {
+      "idCliente": 11,
+      "nome": "Douglas Santos",
+      "cpf": "37827189885",
+      "telefone": "22334567890",
+      "email": "pablohenryfarias@gmail.com",
+      "ativo": true,
+      "id": "Ko4hPb9JMNw"
+    },
+    {
+      "idCliente": 12,
+      "nome": "William Faller",
+      "cpf": "34567890655",
+      "telefone": "11299887777",
+      "email": "william.faller09@gmail.com",
+      "ativo": true,
+      "id": "dJ_SBvaxGM8"
     }
   ],
   "profissionais": [
@@ -105,49 +141,56 @@
       "idServico": 1,
       "nome": "Corte feminino",
       "duracao": 60,
-      "preco": 89.9
+      "preco": 89.9,
+      "especialidade": "cabeleireiro"
     },
     {
       "id": "servico-2",
       "idServico": 2,
       "nome": "Manicure completa",
       "duracao": 45,
-      "preco": 45
+      "preco": 45,
+      "especialidade": "manicure"
     },
     {
       "id": "servico-3",
       "idServico": 3,
       "nome": "Limpeza de pele",
       "duracao": 50,
-      "preco": 120
+      "preco": 120,
+      "especialidade": "esteticista"
     },
     {
       "id": "servico-4",
       "idServico": 4,
       "nome": "Maquiagem social",
       "duracao": 40,
-      "preco": 150
+      "preco": 150,
+      "especialidade": "maquiador"
     },
     {
       "id": "servico-5",
       "idServico": 5,
       "nome": "Escova progressiva",
       "duracao": 120,
-      "preco": 250
+      "preco": 250,
+      "especialidade": "cabeleireiro"
     },
     {
       "id": "servico-6",
       "idServico": 6,
       "nome": "Design de sobrancelha",
       "duracao": 20,
-      "preco": 35
+      "preco": 35,
+      "especialidade": "esteticista"
     },
     {
       "idServico": 7,
       "nome": "Corte Masculino",
       "duracao": 60,
       "preco": 50,
-      "id": "NY-1LHcvxVM"
+      "id": "NY-1LHcvxVM",
+      "especialidade": "cabeleireiro"
     }
   ],
   "agendamentos": [
@@ -247,8 +290,71 @@
       "idProfissional": 1,
       "idServico": 7,
       "dataHora": "2026-08-01T13:10",
-      "status": "agendado",
+      "status": "realizado",
       "id": "dxC09N4WBgE"
+    },
+    {
+      "idAgendamento": 12,
+      "idCliente": 10,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-28T09:30",
+      "status": "realizado",
+      "id": "SdcG9kJOga8"
+    },
+    {
+      "idAgendamento": 13,
+      "idCliente": 11,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-28T11:00",
+      "status": "agendado",
+      "id": "XqnV_6JJMw4"
+    },
+    {
+      "idAgendamento": 14,
+      "idCliente": 10,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-29T09:00",
+      "status": "agendado",
+      "id": "a2JG146g1zI"
+    },
+    {
+      "idAgendamento": 15,
+      "idCliente": 12,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-29T10:30",
+      "status": "agendado",
+      "id": "s4FU5pVnIrM"
+    },
+    {
+      "idAgendamento": 16,
+      "idCliente": 10,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-28T16:30",
+      "status": "agendado",
+      "id": "7ZgN6TwZArA"
+    },
+    {
+      "idAgendamento": 17,
+      "idCliente": 10,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-07-29T15:30",
+      "status": "agendado",
+      "id": "gBE76KBchAo"
+    },
+    {
+      "idAgendamento": 18,
+      "idCliente": 12,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-08-01T11:30",
+      "status": "agendado",
+      "id": "fDzQi6FGYio"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

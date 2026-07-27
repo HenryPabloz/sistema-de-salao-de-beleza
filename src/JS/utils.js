@@ -159,6 +159,12 @@ function contemNumero(texto) {
     return /\d/.test(texto);
 }
 
+/** Verifica se o email tem o formato básico "algo@algo.algo" (regex simples). */
+function validaEmailEstrutural(email) {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regexEmail.test(email);
+}
+
 // ----------------------------------------------------------------------------
 // Helpers de validação visual de formulário (borda vermelha + mensagem)
 // ----------------------------------------------------------------------------

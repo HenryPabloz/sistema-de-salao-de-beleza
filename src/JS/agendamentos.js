@@ -16,6 +16,79 @@ const HORARIO_FECHAMENTO = 18;
 const INTERVALO_GRADE_MINUTOS = 30;
 const BUFFER_MINUTOS_AGENDA = 15;
 
+// --- EmailJS: confirmação de agendamento e lembrete 1h antes -----------------
+// Credenciais criadas em https://www.emailjs.com/ (Dashboard → Email Services / Email Templates / Account → API).
+// SUBSTITUA os valores abaixo pelos gerados na sua conta.
+const EMAILJS_SERVICE_ID = 'service_y61fvtd';
+const EMAILJS_PUBLIC_KEY = '8bHO1AhD6iPFmubbp';
+const EMAILJS_TEMPLATE_CONFIRMACAO = 'template_w90z3tt';
+const EMAILJS_TEMPLATE_LEMBRETE = 'template_iuuybdd';
+const MINUTOS_ANTECEDENCIA_LEMBRETE = 60;
+
+// Guarda o timer de cada lembrete agendado, pra poder cancelar se o agendamento for cancelado.
+// Só funciona enquanto a página estiver aberta (ver limitação documentada no README).
+const timersLembretesEmail = new Map();
+
+/**
+ * Envia um email (confirmação ou lembrete) via EmailJS com os dados do agendamento.
+ * Falhas de envio são só logadas no console — não impedem o fluxo de agendar.
+ */
+async function enviarEmailAgendamento(agendamento, cliente, profissional, servico, tipoEmail) {
+    const dataHora = new Date(agendamento.dataHora);
+    const dataFormatada = dataHora.toLocaleDateString('pt-BR');
+    const horaFormatada = dataHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const dadosDoTemplate = {
+        nomeCliente: cliente.nome,
+        nomeProfissional: profissional.nome,
+        nomeServico: servico.nome,
+        duracao: servico.duracao,
+        data: dataFormatada,
+        hora: horaFormatada,
+        to_email: cliente.email,
+        to_name: cliente.nome
+    };
+
+    let templateId = EMAILJS_TEMPLATE_CONFIRMACAO;
+    if (tipoEmail === 'lembrete') {
+        templateId = EMAILJS_TEMPLATE_LEMBRETE;
+    }
+
+    try {
+        await emailjs.send(EMAILJS_SERVICE_ID, templateId, dadosDoTemplate, EMAILJS_PUBLIC_KEY);
+        console.log('Email de ' + tipoEmail + ' enviado para ' + cliente.email);
+    } catch (erro) {
+        console.log('Erro ao enviar email de ' + tipoEmail + ':', erro);
+    }
+}
+
+/** Agenda o envio do email de lembrete para 1h antes do horário do agendamento. */
+function agendarLembreteEmail(agendamento, cliente, profissional, servico) {
+    const horarioDoAgendamento = new Date(agendamento.dataHora).getTime();
+    const horarioDoLembrete = horarioDoAgendamento - MINUTOS_ANTECEDENCIA_LEMBRETE * 60000;
+    const tempoAteOLembrete = horarioDoLembrete - Date.now();
+
+    if (tempoAteOLembrete <= 0) {
+        console.log('Agendamento muito próximo: lembrete por email não foi agendado.');
+        return;
+    }
+
+    const timerId = setTimeout(function () {
+        enviarEmailAgendamento(agendamento, cliente, profissional, servico, 'lembrete');
+        timersLembretesEmail.delete(agendamento.idAgendamento);
+    }, tempoAteOLembrete);
+
+    timersLembretesEmail.set(agendamento.idAgendamento, timerId);
+}
+
+/** Cancela o timer do lembrete por email, se houver um agendado para este idAgendamento. */
+function cancelarLembreteEmail(idAgendamento) {
+    if (timersLembretesEmail.has(idAgendamento)) {
+        clearTimeout(timersLembretesEmail.get(idAgendamento));
+        timersLembretesEmail.delete(idAgendamento);
+    }
+}
+
 function buscarClientePorId(idCliente) {
     return listaClientesAgendamento.find(function (c) { return c.idCliente === idCliente; });
 }
@@ -214,11 +287,9 @@ function renderizarPaginacaoAgendamentos(totalDeRegistros) {
 function preencherSelectsFormularioAgendamento() {
     const selectCliente = document.getElementById('campoClienteAgendamento');
     const selectProfissional = document.getElementById('campoProfissionalAgendamento');
-    const selectServico = document.getElementById('campoServicoAgendamento');
 
     selectCliente.innerHTML = '<option value="">Selecione um cliente ativo</option>';
     selectProfissional.innerHTML = '<option value="">Selecione um profissional</option>';
-    selectServico.innerHTML = '<option value="">Selecione um serviço</option>';
 
     const clientesAtivos = listaClientesAgendamento.filter(function (cliente) {
         return cliente.ativo === true;
@@ -236,13 +307,6 @@ function preencherSelectsFormularioAgendamento() {
         opcao.value = profissional.idProfissional;
         opcao.textContent = profissional.nome + ' — ' + capitalizarPrimeiraLetra(profissional.especialidade);
         selectProfissional.appendChild(opcao);
-    });
-
-    listaServicosAgendamento.forEach(function (servico) {
-        const opcao = document.createElement('option');
-        opcao.value = servico.idServico;
-        opcao.textContent = servico.nome + ' (' + servico.duracao + ' min) — ' + formataPrecoBRL(servico.preco);
-        selectServico.appendChild(opcao);
     });
 
     const avisoSemClientes = document.getElementById('avisoSemClientes');
@@ -267,11 +331,53 @@ function preencherSelectsFormularioAgendamento() {
 
     if (listaServicosAgendamento.length === 0) {
         avisoSemServicos.classList.remove('d-none');
-        selectServico.disabled = true;
     } else {
         avisoSemServicos.classList.add('d-none');
-        selectServico.disabled = false;
     }
+
+    preencherSelectServicoFiltrado();
+}
+
+/**
+ * Preenche o select de Serviço só com os serviços da MESMA especialidade do
+ * profissional selecionado (ex.: Cabeleireiro não deve poder receber um
+ * agendamento de Maquiagem social).
+ */
+function preencherSelectServicoFiltrado() {
+    const selectServico = document.getElementById('campoServicoAgendamento');
+    const idProfissional = document.getElementById('campoProfissionalAgendamento').value;
+
+    if (idProfissional === '') {
+        selectServico.innerHTML = '<option value="">Selecione um profissional primeiro</option>';
+        selectServico.disabled = true;
+        return;
+    }
+
+    const profissional = buscarProfissionalPorId(Number(idProfissional));
+    let especialidadeDoProfissional = '';
+    if (profissional) {
+        especialidadeDoProfissional = profissional.especialidade;
+    }
+
+    const servicosDaEspecialidade = listaServicosAgendamento.filter(function (servico) {
+        return servico.especialidade === especialidadeDoProfissional;
+    });
+
+    if (servicosDaEspecialidade.length === 0) {
+        selectServico.innerHTML = '<option value="">Nenhum serviço cadastrado para esta especialidade</option>';
+        selectServico.disabled = true;
+        return;
+    }
+
+    selectServico.disabled = false;
+    selectServico.innerHTML = '<option value="">Selecione um serviço</option>';
+
+    servicosDaEspecialidade.forEach(function (servico) {
+        const opcao = document.createElement('option');
+        opcao.value = servico.idServico;
+        opcao.textContent = servico.nome + ' (' + servico.duracao + ' min) — ' + formataPrecoBRL(servico.preco);
+        selectServico.appendChild(opcao);
+    });
 }
 
 /** Se estiver editando um agendamento, devolve o idAgendamento dele (pra não conflitar consigo mesmo). */
@@ -293,19 +399,33 @@ function obterIdAgendamentoEmEdicao() {
     return agendamentoExistente.idAgendamento;
 }
 
-/** Lê a data já escolhida no campo de data/hora do formulário, ou usa hoje como padrão. */
-function obterDataBaseDoFormulario() {
-    const campoDataHora = document.getElementById('campoDataHoraAgendamento');
-
-    if (campoDataHora.value) {
-        return campoDataHora.value.slice(0, 10);
-    }
-
+/** Data de hoje no formato YYYY-MM-DD (mesmo formato do input type="date"). */
+function obterDataDeHoje() {
     const hoje = new Date();
     const ano = hoje.getFullYear();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
     const dia = String(hoje.getDate()).padStart(2, '0');
     return ano + '-' + mes + '-' + dia;
+}
+
+/** Lê a data escolhida no campo Data do formulário, ou usa hoje como padrão. */
+function obterDataBaseDoFormulario() {
+    const campoData = document.getElementById('campoDataAgendamento');
+
+    if (campoData.value) {
+        return campoData.value;
+    }
+
+    return obterDataDeHoje();
+}
+
+/** Marca/desmarca o erro visual do bloco de horários (não é um <input>, então não usa exibirErroCampo). */
+function exibirErroHorario() {
+    document.getElementById('blocoHorarios').classList.add('tem-erro');
+}
+
+function limparErroHorario() {
+    document.getElementById('blocoHorarios').classList.remove('tem-erro');
 }
 
 /**
@@ -374,14 +494,31 @@ function calcularHorariosDoDia(idProfissional, idServico, dataBase) {
     return horarios;
 }
 
+/** Mostra/esconde a linha de confirmação "Horário selecionado: ..." (o campo real fica oculto). */
+function atualizarConfirmacaoHorario(dataBase, horario) {
+    const bloco = document.getElementById('horarioConfirmado');
+    const texto = document.getElementById('horarioConfirmadoTexto');
+
+    if (!dataBase || !horario) {
+        bloco.classList.add('d-none');
+        texto.textContent = '';
+        return;
+    }
+
+    texto.textContent = 'Horário selecionado: ' + formataDataHora(dataBase + 'T' + horario + ':00');
+    bloco.classList.remove('d-none');
+}
+
 /** Redesenha a grade de horários com base no profissional/serviço/data escolhidos no formulário. */
 function renderizarGradeHorariosDisponiveis() {
     const grade = document.getElementById('gradeHorariosDisponiveis');
     const mensagem = document.getElementById('mensagemHorariosDisponiveis');
     const idProfissional = document.getElementById('campoProfissionalAgendamento').value;
     const idServico = document.getElementById('campoServicoAgendamento').value;
+    const dataEscolhida = document.getElementById('campoDataAgendamento').value;
 
     grade.innerHTML = '';
+    atualizarConfirmacaoHorario();
 
     if (idProfissional === '') {
         mensagem.textContent = 'Selecione um profissional para ver os horários disponíveis.';
@@ -395,7 +532,13 @@ function renderizarGradeHorariosDisponiveis() {
         return;
     }
 
-    const dataBase = obterDataBaseDoFormulario();
+    if (dataEscolhida === '') {
+        mensagem.textContent = 'Selecione uma data para ver os horários disponíveis.';
+        mensagem.style.display = 'block';
+        return;
+    }
+
+    const dataBase = dataEscolhida;
     const horarios = calcularHorariosDoDia(Number(idProfissional), Number(idServico), dataBase);
 
     if (horarios.length === 0) {
@@ -422,6 +565,7 @@ function renderizarGradeHorariosDisponiveis() {
         } else {
             if (valorAtualDoCampo === valorCompleto) {
                 botao.classList.add('selecionado');
+                atualizarConfirmacaoHorario(dataBase, item.horario);
             }
 
             botao.addEventListener('click', function () {
@@ -429,10 +573,10 @@ function renderizarGradeHorariosDisponiveis() {
                     b.classList.remove('selecionado');
                 });
                 botao.classList.add('selecionado');
+                atualizarConfirmacaoHorario(dataBase, item.horario);
 
-                const campoDataHora = document.getElementById('campoDataHoraAgendamento');
-                campoDataHora.value = valorCompleto;
-                limparErroCampo(campoDataHora);
+                document.getElementById('campoDataHoraAgendamento').value = valorCompleto;
+                limparErroHorario();
             });
         }
 
@@ -447,23 +591,32 @@ function mostrarFormularioAgendamento(agendamentoParaEditar) {
     limparErroCampo(document.getElementById('campoClienteAgendamento'));
     limparErroCampo(document.getElementById('campoProfissionalAgendamento'));
     limparErroCampo(document.getElementById('campoServicoAgendamento'));
-    limparErroCampo(document.getElementById('campoDataHoraAgendamento'));
+    limparErroCampo(document.getElementById('campoDataAgendamento'));
+    limparErroHorario();
 
     preencherSelectsFormularioAgendamento();
 
+    const campoData = document.getElementById('campoDataAgendamento');
     const campoDataHora = document.getElementById('campoDataHoraAgendamento');
-    campoDataHora.min = converterIsoParaDatetimeLocal(new Date().toISOString());
+    campoData.min = obterDataDeHoje();
 
     if (agendamentoParaEditar) {
         document.getElementById('tituloFormularioAgendamento').textContent = 'Editar agendamento';
         document.getElementById('agendamentoIdEditando').value = agendamentoParaEditar.id;
         document.getElementById('campoClienteAgendamento').value = agendamentoParaEditar.idCliente;
         document.getElementById('campoProfissionalAgendamento').value = agendamentoParaEditar.idProfissional;
+
+        preencherSelectServicoFiltrado();
         document.getElementById('campoServicoAgendamento').value = agendamentoParaEditar.idServico;
-        campoDataHora.value = converterIsoParaDatetimeLocal(agendamentoParaEditar.dataHora);
+
+        const dataHoraFormatada = converterIsoParaDatetimeLocal(agendamentoParaEditar.dataHora);
+        campoData.value = dataHoraFormatada.slice(0, 10);
+        campoDataHora.value = dataHoraFormatada;
     } else {
         document.getElementById('tituloFormularioAgendamento').textContent = 'Novo agendamento';
         document.getElementById('agendamentoIdEditando').value = '';
+        campoData.value = obterDataDeHoje();
+        campoDataHora.value = '';
     }
 
     renderizarGradeHorariosDisponiveis();
@@ -485,12 +638,14 @@ function validarFormularioAgendamento() {
     const campoCliente = document.getElementById('campoClienteAgendamento');
     const campoProfissional = document.getElementById('campoProfissionalAgendamento');
     const campoServico = document.getElementById('campoServicoAgendamento');
+    const campoData = document.getElementById('campoDataAgendamento');
     const campoDataHora = document.getElementById('campoDataHoraAgendamento');
 
     limparErroCampo(campoCliente);
     limparErroCampo(campoProfissional);
     limparErroCampo(campoServico);
-    limparErroCampo(campoDataHora);
+    limparErroCampo(campoData);
+    limparErroHorario();
 
     if (campoPreenchido(campoCliente.value) === false) {
         exibirErroCampo(campoCliente, 'Cliente é obrigatório');
@@ -507,8 +662,13 @@ function validarFormularioAgendamento() {
         formularioValido = false;
     }
 
+    if (campoPreenchido(campoData.value) === false) {
+        exibirErroCampo(campoData, 'Data é obrigatória');
+        formularioValido = false;
+    }
+
     if (campoPreenchido(campoDataHora.value) === false) {
-        exibirErroCampo(campoDataHora, 'Data e hora são obrigatórias');
+        exibirErroHorario();
         formularioValido = false;
     }
 
@@ -572,6 +732,17 @@ async function salvarAgendamento(evento) {
             return;
         }
 
+        const clienteEscolhido = buscarClientePorId(idCliente);
+        const profissionalEscolhido = buscarProfissionalPorId(idProfissional);
+
+        if (validaEmailEstrutural(clienteEscolhido.email) === false) {
+            exibirErro(
+                'Cliente sem email válido',
+                'O cliente "' + clienteEscolhido.nome + '" não possui um email válido cadastrado. Edite o cliente e corrija o email antes de agendar.'
+            );
+            return;
+        }
+
         if (idEditando === '') {
             let maiorId = 0;
             listaAgendamentosCompleta.forEach(function (agendamento) {
@@ -580,14 +751,19 @@ async function salvarAgendamento(evento) {
                 }
             });
 
-            await criarAgendamento({
+            const agendamentoCriado = {
                 idAgendamento: maiorId + 1,
                 idCliente: idCliente,
                 idProfissional: idProfissional,
                 idServico: idServico,
                 dataHora: dataHoraInformada,
                 status: 'agendado'
-            });
+            };
+
+            await criarAgendamento(agendamentoCriado);
+
+            enviarEmailAgendamento(agendamentoCriado, clienteEscolhido, profissionalEscolhido, servicoEscolhido, 'confirmacao');
+            agendarLembreteEmail(agendamentoCriado, clienteEscolhido, profissionalEscolhido, servicoEscolhido);
         } else {
             await editarAgendamento(idEditando, {
                 idAgendamento: agendamentoExistente.idAgendamento,
@@ -646,6 +822,7 @@ async function cancelarAgendamento(agendamento) {
 
     try {
         await alterarStatusAgendamento(agendamento.id, 'cancelado');
+        cancelarLembreteEmail(agendamento.idAgendamento);
         exibirToastSucesso('Agendamento cancelado!');
         await carregarAgendamentos();
     } catch (erro) {
@@ -695,8 +872,20 @@ document.getElementById('botaoCancelarFormularioAgendamento').addEventListener('
 document.getElementById('formularioAgendamento').addEventListener('submit', salvarAgendamento);
 document.getElementById('botaoRecarregarAgendamentos').addEventListener('click', carregarAgendamentos);
 
-document.getElementById('campoProfissionalAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
-document.getElementById('campoServicoAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
-document.getElementById('campoDataHoraAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
+/** Ao trocar profissional/serviço/data manualmente, o horário escolhido antes não vale mais. */
+function lidarComMudancaDeSelecaoAgendamento() {
+    document.getElementById('campoDataHoraAgendamento').value = '';
+    renderizarGradeHorariosDisponiveis();
+}
+
+/** Trocar o profissional muda quais serviços fazem sentido (por especialidade), então refiltra antes. */
+function lidarComMudancaDeProfissional() {
+    preencherSelectServicoFiltrado();
+    lidarComMudancaDeSelecaoAgendamento();
+}
+
+document.getElementById('campoProfissionalAgendamento').addEventListener('change', lidarComMudancaDeProfissional);
+document.getElementById('campoServicoAgendamento').addEventListener('change', lidarComMudancaDeSelecaoAgendamento);
+document.getElementById('campoDataAgendamento').addEventListener('change', lidarComMudancaDeSelecaoAgendamento);
 
 carregarAgendamentos();

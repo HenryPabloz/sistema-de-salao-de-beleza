@@ -36,6 +36,7 @@ function criarLinhaServico(servico) {
     const linha = document.createElement('tr');
     linha.innerHTML =
         '<td>' + escaparHTML(servico.nome) + '</td>' +
+        '<td>' + escaparHTML(capitalizarPrimeiraLetra(servico.especialidade)) + '</td>' +
         '<td>' + escaparHTML(servico.duracao) + ' min</td>' +
         '<td>' + formataPrecoBRL(servico.preco) + '</td>' +
         '<td><div class="acoes-tabela">' +
@@ -72,6 +73,7 @@ function mostrarFormularioServico(servicoParaEditar) {
     formulario.reset();
 
     limparErroCampo(document.getElementById('campoNomeServico'));
+    limparErroCampo(document.getElementById('campoEspecialidadeServico'));
     limparErroCampo(document.getElementById('campoDuracaoServico'));
     limparErroCampo(document.getElementById('campoPrecoServico'));
 
@@ -79,6 +81,7 @@ function mostrarFormularioServico(servicoParaEditar) {
         document.getElementById('tituloFormularioServico').textContent = 'Editar serviço';
         document.getElementById('servicoIdEditando').value = servicoParaEditar.id;
         document.getElementById('campoNomeServico').value = servicoParaEditar.nome;
+        document.getElementById('campoEspecialidadeServico').value = servicoParaEditar.especialidade;
         document.getElementById('campoDuracaoServico').value = servicoParaEditar.duracao;
         document.getElementById('campoPrecoServico').value = formataPrecoParaInput(servicoParaEditar.preco);
     } else {
@@ -101,19 +104,27 @@ function validarFormularioServico() {
     let formularioValido = true;
 
     const campoNome = document.getElementById('campoNomeServico');
+    const campoEspecialidade = document.getElementById('campoEspecialidadeServico');
     const campoDuracao = document.getElementById('campoDuracaoServico');
     const campoPreco = document.getElementById('campoPrecoServico');
 
     limparErroCampo(campoNome);
+    limparErroCampo(campoEspecialidade);
     limparErroCampo(campoDuracao);
     limparErroCampo(campoPreco);
 
     const nome = campoNome.value.trim();
+    const especialidade = campoEspecialidade.value;
     const duracao = campoDuracao.value.trim();
     const preco = campoPreco.value.trim();
 
     if (campoPreenchido(nome) === false) {
         exibirErroCampo(campoNome, 'Nome é obrigatório');
+        formularioValido = false;
+    }
+
+    if (campoPreenchido(especialidade) === false) {
+        exibirErroCampo(campoEspecialidade, 'Especialidade é obrigatória');
         formularioValido = false;
     }
 
@@ -149,6 +160,7 @@ async function salvarServico(evento) {
 
     const idEditando = document.getElementById('servicoIdEditando').value;
     const nome = document.getElementById('campoNomeServico').value.trim();
+    const especialidade = document.getElementById('campoEspecialidadeServico').value;
     const duracao = Number(document.getElementById('campoDuracaoServico').value);
     const preco = converterTextoParaNumero(document.getElementById('campoPrecoServico').value);
 
@@ -167,6 +179,7 @@ async function salvarServico(evento) {
             await criarServico({
                 idServico: maiorId + 1,
                 nome: nome,
+                especialidade: especialidade,
                 duracao: duracao,
                 preco: preco
             });
@@ -178,6 +191,7 @@ async function salvarServico(evento) {
             await editarServico(idEditando, {
                 idServico: servicoExistente.idServico,
                 nome: nome,
+                especialidade: especialidade,
                 duracao: duracao,
                 preco: preco
             });

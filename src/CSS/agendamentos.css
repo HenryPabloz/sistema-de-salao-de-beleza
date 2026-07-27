@@ -45,9 +45,15 @@
 }
 
 .botao-horario.selecionado {
-  outline: 2px solid var(--cor-texto-principal);
-  outline-offset: 2px;
+  background-color: var(--cor-texto-principal);
+  color: var(--cor-destaque);
+  border-color: var(--cor-texto-principal);
+  box-shadow: 0 0 0 3px rgba(var(--cor-destaque-rgb), 0.4);
   transform: scale(1.05);
+}
+
+.botao-horario.selecionado::before {
+  content: '✓ ';
 }
 
 .botao-horario--indisponivel,
@@ -59,18 +65,40 @@
   opacity: 0.55;
 }
 
+/* --- Confirmação textual do horário escolhido (o campo de data/hora fica oculto) --- */
+.horario-confirmado {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-xs);
+  margin: var(--espaco-sm) 0 0;
+  padding: 0.6rem var(--espaco-sm);
+  background-color: rgba(16, 185, 129, 0.12);
+  border: 1px solid var(--cor-sucesso);
+  border-radius: var(--raio-md);
+  color: var(--cor-sucesso);
+  font-weight: 700;
+  font-size: var(--tamanho-body-sm);
+}
+
+.horario-confirmado svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Grade fica com contorno vermelho quando o formulário é validado sem horário escolhido */
+.form-group.tem-erro .grade-horarios {
+  outline: 1px solid var(--cor-erro);
+  outline-offset: 4px;
+  border-radius: var(--raio-sm);
+}
+
 @media (max-width: 1023px) {
   .grade-horarios { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 767px) {
   .grade-horarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-.formulario-agendamento__linha {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--espaco-md);
 }
 
 .formulario-agendamento__acoes {
@@ -93,10 +121,6 @@
 }
 
 @media (max-width: 767px) {
-  .formulario-agendamento__linha {
-    grid-template-columns: 1fr;
-  }
-
   .formulario-agendamento__acoes {
     flex-direction: column-reverse;
   }
