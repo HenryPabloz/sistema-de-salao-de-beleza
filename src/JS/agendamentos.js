@@ -10,6 +10,12 @@ let listaServicosAgendamento = [];
 let paginaAtualAgendamentos = 1;
 const AGENDAMENTOS_POR_PAGINA = 10;
 
+// Grade de horários disponíveis: salão abre 09:00, fecha 18:00, passos de 30min.
+const HORARIO_ABERTURA = 9;
+const HORARIO_FECHAMENTO = 18;
+const INTERVALO_GRADE_MINUTOS = 30;
+const BUFFER_MINUTOS_AGENDA = 15;
+
 function buscarClientePorId(idCliente) {
     return listaClientesAgendamento.find(function (c) { return c.idCliente === idCliente; });
 }
@@ -91,14 +97,14 @@ function criarLinhaAgendamento(agendamento) {
     if (agendamento.status === 'agendado') {
         botoesAcao =
             '<button type="button" class="botao-icone botao-icone--editar" data-id="' + agendamento.id + '" title="Editar agendamento">' + ICONE_SVG_EDITAR + '</button>' +
-            '<button type="button" class="botao-icone botao-icone--sucesso" data-id="' + agendamento.id + '" title="Concluir agendamento">' + ICONE_SVG_CHECK + '</button>' +
-            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + agendamento.id + '" title="Cancelar agendamento">' + ICONE_SVG_CANCELAR + '</button>';
+            '<button type="button" class="botao-icone botao-icone--sucesso" data-id="' + agendamento.id + '" title="Concluir agendamento">' + ICONE_SVG_TESOURA + '</button>' +
+            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + agendamento.id + '" title="Cancelar agendamento">' + ICONE_SVG_TESOURA_TRACEJADA + '</button>';
     }
 
     linha.innerHTML =
-        '<td>' + nomeCliente + '</td>' +
-        '<td>' + nomeProfissional + '</td>' +
-        '<td>' + nomeServico + '</td>' +
+        '<td>' + escaparHTML(nomeCliente) + '</td>' +
+        '<td>' + escaparHTML(nomeProfissional) + '</td>' +
+        '<td>' + escaparHTML(nomeServico) + '</td>' +
         '<td>' + formataDataHora(agendamento.dataHora) + '</td>' +
         '<td><span class="badge-status ' + classeBadge + '">' + textoBadge + '</span></td>' +
         '<td><div class="acoes-tabela">' + botoesAcao + '</div></td>';
@@ -113,11 +119,12 @@ function renderizarTabelaAgendamentos() {
     const corpoTabela = document.getElementById('corpoTabelaAgendamentos');
     const textoVazio = document.getElementById('textoEstadoVazioAgendamentos');
     const termoBusca = document.getElementById('campoBuscaAgendamento').value.trim().toLowerCase();
+    const statusSelecionado = document.getElementById('filtroStatusAgendamentoLista').value;
 
     let agendamentosFiltrados = listaAgendamentosCompleta;
 
     if (termoBusca !== '') {
-        agendamentosFiltrados = listaAgendamentosCompleta.filter(function (agendamento) {
+        agendamentosFiltrados = agendamentosFiltrados.filter(function (agendamento) {
             const cliente = buscarClientePorId(agendamento.idCliente);
             const profissional = buscarProfissionalPorId(agendamento.idProfissional);
 
@@ -135,6 +142,12 @@ function renderizarTabelaAgendamentos() {
         });
     }
 
+    if (statusSelecionado !== '') {
+        agendamentosFiltrados = agendamentosFiltrados.filter(function (agendamento) {
+            return agendamento.status === statusSelecionado;
+        });
+    }
+
     if (agendamentosFiltrados.length === 0) {
         conteudo.classList.add('d-none');
         estadoVazio.classList.add('ativo');
@@ -142,7 +155,7 @@ function renderizarTabelaAgendamentos() {
         if (listaAgendamentosCompleta.length === 0) {
             textoVazio.textContent = 'Crie o primeiro agendamento para começar a preencher a agenda.';
         } else {
-            textoVazio.textContent = 'Nenhum agendamento encontrado para essa busca.';
+            textoVazio.textContent = 'Nenhum agendamento encontrado para essa busca/filtro.';
         }
 
         return;
@@ -261,6 +274,172 @@ function preencherSelectsFormularioAgendamento() {
     }
 }
 
+/** Se estiver editando um agendamento, devolve o idAgendamento dele (pra não conflitar consigo mesmo). */
+function obterIdAgendamentoEmEdicao() {
+    const idEditando = document.getElementById('agendamentoIdEditando').value;
+
+    if (idEditando === '') {
+        return null;
+    }
+
+    const agendamentoExistente = listaAgendamentosCompleta.find(function (a) {
+        return a.id === idEditando;
+    });
+
+    if (!agendamentoExistente) {
+        return null;
+    }
+
+    return agendamentoExistente.idAgendamento;
+}
+
+/** Lê a data já escolhida no campo de data/hora do formulário, ou usa hoje como padrão. */
+function obterDataBaseDoFormulario() {
+    const campoDataHora = document.getElementById('campoDataHoraAgendamento');
+
+    if (campoDataHora.value) {
+        return campoDataHora.value.slice(0, 10);
+    }
+
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return ano + '-' + mes + '-' + dia;
+}
+
+/**
+ * Monta a grade de horários (09:00–18:00, de 30 em 30min) de uma data,
+ * marcando cada horário como disponível ou não para o profissional/serviço.
+ * Cada agendamento já existente ocupa o profissional do início dele até
+ * início + duração do serviço + 15min de buffer (mesma regra do verificaConflito).
+ */
+function calcularHorariosDoDia(idProfissional, idServico, dataBase) {
+    const servico = buscarServicoPorId(idServico);
+
+    if (!servico) {
+        return [];
+    }
+
+    const idAgendamentoExcluir = obterIdAgendamentoEmEdicao();
+
+    const agendamentosDoDia = listaAgendamentosCompleta.filter(function (agendamento) {
+        const mesmoProfissional = agendamento.idProfissional === idProfissional;
+        const mesmoDia = agendamento.dataHora.slice(0, 10) === dataBase;
+        const estaAtivo = agendamento.status === 'agendado' || agendamento.status === 'realizado';
+        const naoEhOAgendamentoEmEdicao = agendamento.idAgendamento !== idAgendamentoExcluir;
+
+        return mesmoProfissional && mesmoDia && estaAtivo && naoEhOAgendamentoEmEdicao;
+    });
+
+    const intervalosOcupados = agendamentosDoDia.map(function (agendamento) {
+        const servicoDoAgendamento = buscarServicoPorId(agendamento.idServico);
+
+        let duracaoOcupada = 0;
+        if (servicoDoAgendamento) {
+            duracaoOcupada = servicoDoAgendamento.duracao;
+        }
+
+        const inicio = new Date(agendamento.dataHora);
+        const fim = new Date(inicio.getTime() + (duracaoOcupada + BUFFER_MINUTOS_AGENDA) * 60000);
+        return { inicio: inicio, fim: fim };
+    });
+
+    const horaFechamento = new Date(dataBase + 'T' + String(HORARIO_FECHAMENTO).padStart(2, '0') + ':00:00');
+    const agora = new Date();
+    const horarios = [];
+
+    for (let hora = HORARIO_ABERTURA; hora < HORARIO_FECHAMENTO; hora++) {
+        for (let minuto = 0; minuto < 60; minuto += INTERVALO_GRADE_MINUTOS) {
+            const horarioTexto = String(hora).padStart(2, '0') + ':' + String(minuto).padStart(2, '0');
+            const inicioSlot = new Date(dataBase + 'T' + horarioTexto + ':00');
+            const fimSlot = new Date(inicioSlot.getTime() + (servico.duracao + BUFFER_MINUTOS_AGENDA) * 60000);
+
+            if (fimSlot > horaFechamento) {
+                continue;
+            }
+
+            if (inicioSlot < agora) {
+                continue;
+            }
+
+            const temConflito = intervalosOcupados.some(function (intervalo) {
+                return inicioSlot < intervalo.fim && fimSlot > intervalo.inicio;
+            });
+
+            horarios.push({ horario: horarioTexto, disponivel: temConflito === false });
+        }
+    }
+
+    return horarios;
+}
+
+/** Redesenha a grade de horários com base no profissional/serviço/data escolhidos no formulário. */
+function renderizarGradeHorariosDisponiveis() {
+    const grade = document.getElementById('gradeHorariosDisponiveis');
+    const mensagem = document.getElementById('mensagemHorariosDisponiveis');
+    const idProfissional = document.getElementById('campoProfissionalAgendamento').value;
+    const idServico = document.getElementById('campoServicoAgendamento').value;
+
+    grade.innerHTML = '';
+
+    if (idProfissional === '') {
+        mensagem.textContent = 'Selecione um profissional para ver os horários disponíveis.';
+        mensagem.style.display = 'block';
+        return;
+    }
+
+    if (idServico === '') {
+        mensagem.textContent = 'Selecione um serviço para ver os horários disponíveis.';
+        mensagem.style.display = 'block';
+        return;
+    }
+
+    const dataBase = obterDataBaseDoFormulario();
+    const horarios = calcularHorariosDoDia(Number(idProfissional), Number(idServico), dataBase);
+
+    if (horarios.length === 0) {
+        mensagem.textContent = 'Nenhum horário disponível para este profissional nesta data.';
+        mensagem.style.display = 'block';
+        return;
+    }
+
+    mensagem.style.display = 'none';
+
+    const valorAtualDoCampo = document.getElementById('campoDataHoraAgendamento').value;
+
+    horarios.forEach(function (item) {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'botao-horario';
+        botao.textContent = item.horario;
+
+        const valorCompleto = dataBase + 'T' + item.horario;
+
+        if (item.disponivel === false) {
+            botao.disabled = true;
+            botao.classList.add('botao-horario--indisponivel');
+        } else {
+            if (valorAtualDoCampo === valorCompleto) {
+                botao.classList.add('selecionado');
+            }
+
+            botao.addEventListener('click', function () {
+                document.querySelectorAll('#gradeHorariosDisponiveis .botao-horario').forEach(function (b) {
+                    b.classList.remove('selecionado');
+                });
+                botao.classList.add('selecionado');
+
+                const campoDataHora = document.getElementById('campoDataHoraAgendamento');
+                campoDataHora.value = valorCompleto;
+                limparErroCampo(campoDataHora);
+            });
+        }
+
+        grade.appendChild(botao);
+    });
+}
+
 function mostrarFormularioAgendamento(agendamentoParaEditar) {
     const formulario = document.getElementById('formularioAgendamento');
     formulario.reset();
@@ -272,17 +451,22 @@ function mostrarFormularioAgendamento(agendamentoParaEditar) {
 
     preencherSelectsFormularioAgendamento();
 
+    const campoDataHora = document.getElementById('campoDataHoraAgendamento');
+    campoDataHora.min = converterIsoParaDatetimeLocal(new Date().toISOString());
+
     if (agendamentoParaEditar) {
         document.getElementById('tituloFormularioAgendamento').textContent = 'Editar agendamento';
         document.getElementById('agendamentoIdEditando').value = agendamentoParaEditar.id;
         document.getElementById('campoClienteAgendamento').value = agendamentoParaEditar.idCliente;
         document.getElementById('campoProfissionalAgendamento').value = agendamentoParaEditar.idProfissional;
         document.getElementById('campoServicoAgendamento').value = agendamentoParaEditar.idServico;
-        document.getElementById('campoDataHoraAgendamento').value = converterIsoParaDatetimeLocal(agendamentoParaEditar.dataHora);
+        campoDataHora.value = converterIsoParaDatetimeLocal(agendamentoParaEditar.dataHora);
     } else {
         document.getElementById('tituloFormularioAgendamento').textContent = 'Novo agendamento';
         document.getElementById('agendamentoIdEditando').value = '';
     }
+
+    renderizarGradeHorariosDisponiveis();
 
     document.getElementById('secaoListagemAgendamentos').classList.add('d-none');
     document.getElementById('secaoFormularioAgendamento').classList.remove('d-none');
@@ -497,6 +681,11 @@ document.getElementById('campoBuscaAgendamento').addEventListener('input', funct
     renderizarTabelaAgendamentos();
 });
 
+document.getElementById('filtroStatusAgendamentoLista').addEventListener('change', function () {
+    paginaAtualAgendamentos = 1;
+    renderizarTabelaAgendamentos();
+});
+
 document.getElementById('botaoNovoAgendamento').addEventListener('click', function () {
     mostrarFormularioAgendamento(null);
 });
@@ -505,5 +694,9 @@ document.getElementById('botaoVoltarListagemAgendamento').addEventListener('clic
 document.getElementById('botaoCancelarFormularioAgendamento').addEventListener('click', mostrarListagemAgendamentos);
 document.getElementById('formularioAgendamento').addEventListener('submit', salvarAgendamento);
 document.getElementById('botaoRecarregarAgendamentos').addEventListener('click', carregarAgendamentos);
+
+document.getElementById('campoProfissionalAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
+document.getElementById('campoServicoAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
+document.getElementById('campoDataHoraAgendamento').addEventListener('change', renderizarGradeHorariosDisponiveis);
 
 carregarAgendamentos();
