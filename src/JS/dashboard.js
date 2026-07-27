@@ -25,7 +25,8 @@ async function carregarDadosDashboard() {
 
         estadoCarregando.classList.remove('ativo');
         conteudo.classList.remove('d-none');
-        animarRevelacaoLista(document.querySelectorAll('#conteudoDashboard .anima-entrada'));
+        animarCardsKPI();
+        animarRevelacaoSecoes(document.querySelectorAll('#conteudoDashboard .card-section.anima-entrada'));
 
         aplicarFiltrosDashboard();
     } catch (erro) {
@@ -111,8 +112,8 @@ function atualizarFaturamentoPorProfissional(agendamentos, profissionais) {
     linhasComFaturamento.forEach(function (item) {
         const linha = document.createElement('tr');
         linha.innerHTML =
-            '<td>' + item.profissional.nome + '</td>' +
-            '<td>' + capitalizarPrimeiraLetra(item.profissional.especialidade) + '</td>' +
+            '<td>' + escaparHTML(item.profissional.nome) + '</td>' +
+            '<td>' + escaparHTML(capitalizarPrimeiraLetra(item.profissional.especialidade)) + '</td>' +
             '<td>' + formataPrecoBRL(item.faturamento) + '</td>';
         corpoTabela.appendChild(linha);
     });
@@ -157,7 +158,7 @@ function atualizarRankingServicos(agendamentos, servicos) {
     contagemPorServico.forEach(function (item) {
         const linha = document.createElement('tr');
         linha.innerHTML =
-            '<td>' + item.servico.nome + '</td>' +
+            '<td>' + escaparHTML(item.servico.nome) + '</td>' +
             '<td>' + item.quantidade + '</td>';
         corpoTabela.appendChild(linha);
     });
@@ -206,7 +207,7 @@ function atualizarClientesFrequentes(agendamentos, clientes) {
     linhasComFrequencia.forEach(function (item) {
         const linha = document.createElement('tr');
         linha.innerHTML =
-            '<td>' + item.cliente.nome + '</td>' +
+            '<td>' + escaparHTML(item.cliente.nome) + '</td>' +
             '<td>' + formataTelefone(item.cliente.telefone) + '</td>' +
             '<td>' + item.quantidade + '</td>';
         corpoTabela.appendChild(linha);
@@ -238,7 +239,7 @@ function atualizarTaxaCancelamento(agendamentos) {
     const taxaArredondada = Math.round(taxa * 10) / 10;
 
     valorTaxa.textContent = taxaArredondada + '%';
-    barra.style.height = taxa + '%';
+    animarBarraVertical(barra, taxa);
     textoContagem.textContent = 'Cancelados: ' + totalCancelados + ' / Total: ' + agendamentos.length;
 }
 

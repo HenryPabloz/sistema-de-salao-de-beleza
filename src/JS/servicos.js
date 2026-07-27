@@ -35,12 +35,12 @@ async function carregarServicos() {
 function criarLinhaServico(servico) {
     const linha = document.createElement('tr');
     linha.innerHTML =
-        '<td>' + servico.nome + '</td>' +
-        '<td>' + servico.duracao + ' min</td>' +
+        '<td>' + escaparHTML(servico.nome) + '</td>' +
+        '<td>' + escaparHTML(servico.duracao) + ' min</td>' +
         '<td>' + formataPrecoBRL(servico.preco) + '</td>' +
         '<td><div class="acoes-tabela">' +
             '<button type="button" class="botao-icone botao-icone--editar" data-id="' + servico.id + '" title="Editar serviço">' + ICONE_SVG_EDITAR + '</button>' +
-            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + servico.id + '" title="Excluir serviço">' + ICONE_SVG_LIXEIRA + '</button>' +
+            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + servico.id + '" title="Excluir serviço">' + ICONE_SVG_TESOURA_TRACEJADA + '</button>' +
         '</div></td>';
     return linha;
 }

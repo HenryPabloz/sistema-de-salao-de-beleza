@@ -52,7 +52,7 @@ function criarLinhaCliente(cliente) {
     }
 
     linha.innerHTML =
-        '<td>' + cliente.nome + '</td>' +
+        '<td>' + escaparHTML(cliente.nome) + '</td>' +
         '<td>' + formataCPF(cliente.cpf) + '</td>' +
         '<td>' + formataTelefone(cliente.telefone) + '</td>' +
         '<td><span class="badge-status ' + classeBadge + '">' + textoBadge + '</span></td>' +
@@ -71,12 +71,23 @@ function renderizarTabelaClientes() {
     const corpoTabela = document.getElementById('corpoTabelaClientes');
     const textoVazio = document.getElementById('textoEstadoVazioClientes');
     const termoBusca = document.getElementById('campoBuscaCliente').value.trim().toLowerCase();
+    const statusSelecionado = document.getElementById('filtroStatusCliente').value;
 
     let clientesFiltrados = listaClientesCompleta;
 
     if (termoBusca !== '') {
-        clientesFiltrados = listaClientesCompleta.filter(function (cliente) {
+        clientesFiltrados = clientesFiltrados.filter(function (cliente) {
             return cliente.nome.toLowerCase().includes(termoBusca);
+        });
+    }
+
+    if (statusSelecionado === 'ativo') {
+        clientesFiltrados = clientesFiltrados.filter(function (cliente) {
+            return cliente.ativo === true;
+        });
+    } else if (statusSelecionado === 'inativo') {
+        clientesFiltrados = clientesFiltrados.filter(function (cliente) {
+            return cliente.ativo === false;
         });
     }
 
@@ -87,7 +98,7 @@ function renderizarTabelaClientes() {
         if (listaClientesCompleta.length === 0) {
             textoVazio.textContent = 'Cadastre o primeiro cliente para começar a organizar seus atendimentos.';
         } else {
-            textoVazio.textContent = 'Nenhum cliente encontrado para essa busca.';
+            textoVazio.textContent = 'Nenhum cliente encontrado para essa busca/filtro.';
         }
 
         return;
@@ -223,6 +234,9 @@ function validarFormularioCliente() {
     if (campoPreenchido(telefone) === false) {
         exibirErroCampo(campoTelefone, 'Telefone é obrigatório');
         formularioValido = false;
+    } else if (validaTelefoneEstrutural(telefone) === false) {
+        exibirErroCampo(campoTelefone, 'Telefone deve conter 10 ou 11 dígitos');
+        formularioValido = false;
     }
 
     return formularioValido;
@@ -335,6 +349,11 @@ document.getElementById('corpoTabelaClientes').addEventListener('click', functio
 });
 
 document.getElementById('campoBuscaCliente').addEventListener('input', function () {
+    paginaAtualClientes = 1;
+    renderizarTabelaClientes();
+});
+
+document.getElementById('filtroStatusCliente').addEventListener('change', function () {
     paginaAtualClientes = 1;
     renderizarTabelaClientes();
 });

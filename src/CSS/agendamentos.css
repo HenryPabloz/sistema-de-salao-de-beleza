@@ -11,7 +11,60 @@
 }
 
 .formulario-agendamento {
-  max-width: 620px;
+  max-width: 680px;
+}
+
+/* --- Grade de horários disponíveis --- */
+.bloco-horarios .texto-auxiliar {
+  display: block;
+  margin-bottom: var(--espaco-xs);
+}
+
+.grade-horarios {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-xs);
+}
+
+.botao-horario {
+  padding: 0.6rem 0.4rem;
+  background-color: var(--cor-destaque);
+  color: #1F2024;
+  border: 1px solid var(--cor-destaque);
+  border-radius: var(--raio-sm);
+  font-family: var(--fonte-corpo);
+  font-weight: 700;
+  font-size: var(--tamanho-body-sm);
+  text-align: center;
+  transition: transform var(--transicao-rapida), box-shadow var(--transicao-rapida);
+}
+
+.botao-horario:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: var(--sombra-card);
+}
+
+.botao-horario.selecionado {
+  outline: 2px solid var(--cor-texto-principal);
+  outline-offset: 2px;
+  transform: scale(1.05);
+}
+
+.botao-horario--indisponivel,
+.botao-horario:disabled {
+  background-color: var(--cor-fundo-secundario);
+  color: var(--cor-texto-desabilitado);
+  border-color: var(--cor-borda);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 1023px) {
+  .grade-horarios { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .grade-horarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .formulario-agendamento__linha {

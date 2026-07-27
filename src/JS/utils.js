@@ -3,6 +3,32 @@
 // máscaras, formatação, validação genérica e helpers de feedback visual.
 // ============================================================================
 
+// ----------------------------------------------------------------------------
+// Segurança
+// ----------------------------------------------------------------------------
+
+/**
+ * Escapa caracteres HTML especiais (<, >, &, ", ') para prevenir XSS.
+ * Usa o próprio navegador (textContent) para fazer a conversão, então é a
+ * mesma técnica que o navegador usa internamente — não tem como escapar errado.
+ * @param {*} valor - texto (ou qualquer valor) a ser escapado
+ * @returns {string} texto seguro para inserir dentro de innerHTML
+ */
+function escaparHTML(valor) {
+    if (valor === null || valor === undefined) {
+        return '';
+    }
+
+    const divTemporaria = document.createElement('div');
+    divTemporaria.textContent = valor;
+    return divTemporaria.innerHTML;
+}
+
+/** Verifica se o usuário prefere reduzir movimento (acessibilidade). */
+function prefereReducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 /** Aplica a máscara 000.000.000-00 enquanto o usuário digita o CPF. */
 function formataCPF(valor) {
     const numeros = valor.replace(/\D/g, '').slice(0, 11);
@@ -48,6 +74,12 @@ function formataTelefone(valor) {
 function validaCPFEstrutural(cpf) {
     const numeros = cpf.replace(/\D/g, '');
     return numeros.length === 11;
+}
+
+/** Verifica se o telefone tem 10 dígitos (fixo) ou 11 dígitos (celular). */
+function validaTelefoneEstrutural(telefone) {
+    const numeros = telefone.replace(/\D/g, '');
+    return numeros.length === 10 || numeros.length === 11;
 }
 
 /** Formata um número como preço brasileiro, ex.: 259.9 -> "R$ 259,90". */
@@ -226,8 +258,8 @@ const ICONE_SVG_EDITAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 
 const ICONE_SVG_PODER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8"/><path d="M6.5 6.5a8 8 0 1 0 11 0"/></svg>';
 
-const ICONE_SVG_LIXEIRA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7M6 7l1 13.5A1.5 1.5 0 0 0 8.5 22h7a1.5 1.5 0 0 0 1.5-1.5L18 7"/><path d="M10 11v6M14 11v6"/></svg>';
+/** Tesoura (ícone "scissors" do Lucide) — usada para a ação "concluir". */
+const ICONE_SVG_TESOURA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>';
 
-const ICONE_SVG_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.3 2.3 4.7-4.8"/></svg>';
-
-const ICONE_SVG_CANCELAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>';
+/** Tesoura com linha tracejada (ícone "scissors-line-dashed" do Lucide) — usada para excluir/cancelar. */
+const ICONE_SVG_TESOURA_TRACEJADA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.42 9.42 8 12"/><circle cx="4" cy="8" r="2"/><path d="m14 6-8.58 8.58"/><circle cx="4" cy="16" r="2"/><path d="M10.8 14.8 14 18"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>';

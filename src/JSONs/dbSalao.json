@@ -1,36 +1,255 @@
 {
   "clientes": [
-    { "id": "cliente-1", "idCliente": 1, "nome": "Marina Souza Lima", "cpf": "12345678901", "telefone": "11987654321", "ativo": true },
-    { "id": "cliente-2", "idCliente": 2, "nome": "Rafael Andrade Costa", "cpf": "23456789012", "telefone": "21976543210", "ativo": true },
-    { "id": "cliente-3", "idCliente": 3, "nome": "Beatriz Fernandes Rocha", "cpf": "34567890123", "telefone": "11965432109", "ativo": false },
-    { "id": "cliente-4", "idCliente": 4, "nome": "Thiago Martins Alves", "cpf": "45678901234", "telefone": "1132165498", "ativo": true },
-    { "id": "cliente-5", "idCliente": 5, "nome": "Camila Ribeiro Duarte", "cpf": "56789012345", "telefone": "21987651234", "ativo": true },
-    { "id": "cliente-6", "idCliente": 6, "nome": "Eduardo Nogueira Pinto", "cpf": "67890123456", "telefone": "11998877665", "ativo": false }
+    {
+      "id": "cliente-1",
+      "idCliente": 1,
+      "nome": "Marina Souza Lima",
+      "cpf": "12345678901",
+      "telefone": "11987654321",
+      "ativo": true
+    },
+    {
+      "id": "cliente-2",
+      "idCliente": 2,
+      "nome": "Rafael Andrade Costa",
+      "cpf": "23456789012",
+      "telefone": "21976543210",
+      "ativo": true
+    },
+    {
+      "id": "cliente-3",
+      "idCliente": 3,
+      "nome": "Beatriz Fernandes Rocha",
+      "cpf": "34567890123",
+      "telefone": "11965432109",
+      "ativo": false
+    },
+    {
+      "id": "cliente-4",
+      "idCliente": 4,
+      "nome": "Thiago Martins Alves",
+      "cpf": "45678901234",
+      "telefone": "1132165498",
+      "ativo": true
+    },
+    {
+      "idCliente": 5,
+      "nome": "Camila Ribeiro Duarte",
+      "cpf": "56789012345",
+      "telefone": "21987651235",
+      "ativo": true,
+      "id": "cliente-5"
+    },
+    {
+      "id": "cliente-6",
+      "idCliente": 6,
+      "nome": "Eduardo Nogueira Pinto",
+      "cpf": "67890123456",
+      "telefone": "11998877665",
+      "ativo": false
+    },
+    {
+      "idCliente": 7,
+      "nome": "Pablo Henry",
+      "cpf": "37828141646",
+      "telefone": "11946928887",
+      "ativo": true,
+      "id": "mzTnBjG68Ks"
+    },
+    {
+      "idCliente": 8,
+      "nome": "Aline Souto",
+      "cpf": "36798765456",
+      "telefone": "11998765439",
+      "ativo": true,
+      "id": "hNMPIbQ9yFk"
+    },
+    {
+      "idCliente": 9,
+      "nome": "Laura Martins",
+      "cpf": "34560987656",
+      "telefone": "1199876547",
+      "ativo": true,
+      "id": "EzQzbyJd1mA"
+    }
   ],
   "profissionais": [
-    { "id": "profissional-1", "idProfissional": 1, "nome": "Juliana Prado", "especialidade": "cabeleireiro" },
-    { "id": "profissional-2", "idProfissional": 2, "nome": "Marcos Vinícius Teixeira", "especialidade": "manicure" },
-    { "id": "profissional-3", "idProfissional": 3, "nome": "Larissa Cardoso", "especialidade": "esteticista" },
-    { "id": "profissional-4", "idProfissional": 4, "nome": "Fernando Batista", "especialidade": "maquiador" }
+    {
+      "id": "profissional-1",
+      "idProfissional": 1,
+      "nome": "Juliana Prado",
+      "especialidade": "cabeleireiro"
+    },
+    {
+      "id": "profissional-2",
+      "idProfissional": 2,
+      "nome": "Marcos Vinícius Teixeira",
+      "especialidade": "manicure"
+    },
+    {
+      "id": "profissional-3",
+      "idProfissional": 3,
+      "nome": "Larissa Cardoso",
+      "especialidade": "esteticista"
+    },
+    {
+      "id": "profissional-4",
+      "idProfissional": 4,
+      "nome": "Fernando Batista",
+      "especialidade": "maquiador"
+    }
   ],
   "servicos": [
-    { "id": "servico-1", "idServico": 1, "nome": "Corte feminino", "duracao": 60, "preco": 89.90 },
-    { "id": "servico-2", "idServico": 2, "nome": "Manicure completa", "duracao": 45, "preco": 45.00 },
-    { "id": "servico-3", "idServico": 3, "nome": "Limpeza de pele", "duracao": 50, "preco": 120.00 },
-    { "id": "servico-4", "idServico": 4, "nome": "Maquiagem social", "duracao": 40, "preco": 150.00 },
-    { "id": "servico-5", "idServico": 5, "nome": "Escova progressiva", "duracao": 120, "preco": 250.00 },
-    { "id": "servico-6", "idServico": 6, "nome": "Design de sobrancelha", "duracao": 20, "preco": 35.00 }
+    {
+      "id": "servico-1",
+      "idServico": 1,
+      "nome": "Corte feminino",
+      "duracao": 60,
+      "preco": 89.9
+    },
+    {
+      "id": "servico-2",
+      "idServico": 2,
+      "nome": "Manicure completa",
+      "duracao": 45,
+      "preco": 45
+    },
+    {
+      "id": "servico-3",
+      "idServico": 3,
+      "nome": "Limpeza de pele",
+      "duracao": 50,
+      "preco": 120
+    },
+    {
+      "id": "servico-4",
+      "idServico": 4,
+      "nome": "Maquiagem social",
+      "duracao": 40,
+      "preco": 150
+    },
+    {
+      "id": "servico-5",
+      "idServico": 5,
+      "nome": "Escova progressiva",
+      "duracao": 120,
+      "preco": 250
+    },
+    {
+      "id": "servico-6",
+      "idServico": 6,
+      "nome": "Design de sobrancelha",
+      "duracao": 20,
+      "preco": 35
+    },
+    {
+      "idServico": 7,
+      "nome": "Corte Masculino",
+      "duracao": 60,
+      "preco": 50,
+      "id": "NY-1LHcvxVM"
+    }
   ],
   "agendamentos": [
-    { "id": "agendamento-1", "idAgendamento": 1, "idCliente": 1, "idProfissional": 1, "idServico": 1, "dataHora": "2026-07-18T13:00:00", "status": "realizado" },
-    { "id": "agendamento-2", "idAgendamento": 2, "idCliente": 2, "idProfissional": 2, "idServico": 2, "dataHora": "2026-07-19T14:00:00", "status": "realizado" },
-    { "id": "agendamento-3", "idAgendamento": 3, "idCliente": 1, "idProfissional": 3, "idServico": 3, "dataHora": "2026-07-20T09:00:00", "status": "realizado" },
-    { "id": "agendamento-4", "idAgendamento": 4, "idCliente": 4, "idProfissional": 4, "idServico": 4, "dataHora": "2026-07-15T16:00:00", "status": "cancelado" },
-    { "id": "agendamento-5", "idAgendamento": 5, "idCliente": 5, "idProfissional": 1, "idServico": 5, "dataHora": "2026-07-30T11:00:00", "status": "agendado" },
-    { "id": "agendamento-6", "idAgendamento": 6, "idCliente": 2, "idProfissional": 3, "idServico": 3, "dataHora": "2026-08-02T13:30:00", "status": "agendado" },
-    { "id": "agendamento-7", "idAgendamento": 7, "idCliente": 5, "idProfissional": 2, "idServico": 2, "dataHora": "2026-08-03T10:00:00", "status": "agendado" },
-    { "id": "agendamento-8", "idAgendamento": 8, "idCliente": 1, "idProfissional": 4, "idServico": 6, "dataHora": "2026-07-22T15:00:00", "status": "realizado" },
-    { "id": "agendamento-9", "idAgendamento": 9, "idCliente": 4, "idProfissional": 1, "idServico": 1, "dataHora": "2026-07-16T09:30:00", "status": "cancelado" },
-    { "id": "agendamento-10", "idAgendamento": 10, "idCliente": 2, "idProfissional": 1, "idServico": 5, "dataHora": "2026-08-05T09:00:00", "status": "agendado" }
-  ]
+    {
+      "id": "agendamento-1",
+      "idAgendamento": 1,
+      "idCliente": 1,
+      "idProfissional": 1,
+      "idServico": 1,
+      "dataHora": "2026-07-18T13:00:00",
+      "status": "realizado"
+    },
+    {
+      "id": "agendamento-2",
+      "idAgendamento": 2,
+      "idCliente": 2,
+      "idProfissional": 2,
+      "idServico": 2,
+      "dataHora": "2026-07-19T14:00:00",
+      "status": "realizado"
+    },
+    {
+      "id": "agendamento-3",
+      "idAgendamento": 3,
+      "idCliente": 1,
+      "idProfissional": 3,
+      "idServico": 3,
+      "dataHora": "2026-07-20T09:00:00",
+      "status": "realizado"
+    },
+    {
+      "id": "agendamento-4",
+      "idAgendamento": 4,
+      "idCliente": 4,
+      "idProfissional": 4,
+      "idServico": 4,
+      "dataHora": "2026-07-15T16:00:00",
+      "status": "cancelado"
+    },
+    {
+      "id": "agendamento-5",
+      "idAgendamento": 5,
+      "idCliente": 5,
+      "idProfissional": 1,
+      "idServico": 5,
+      "dataHora": "2026-07-30T11:00:00",
+      "status": "cancelado"
+    },
+    {
+      "idAgendamento": 6,
+      "idCliente": 2,
+      "idProfissional": 3,
+      "idServico": 3,
+      "dataHora": "2026-08-02T13:30",
+      "status": "realizado",
+      "id": "agendamento-6"
+    },
+    {
+      "id": "agendamento-7",
+      "idAgendamento": 7,
+      "idCliente": 5,
+      "idProfissional": 2,
+      "idServico": 2,
+      "dataHora": "2026-08-03T10:00:00",
+      "status": "agendado"
+    },
+    {
+      "id": "agendamento-8",
+      "idAgendamento": 8,
+      "idCliente": 1,
+      "idProfissional": 4,
+      "idServico": 6,
+      "dataHora": "2026-07-22T15:00:00",
+      "status": "realizado"
+    },
+    {
+      "id": "agendamento-9",
+      "idAgendamento": 9,
+      "idCliente": 4,
+      "idProfissional": 1,
+      "idServico": 1,
+      "dataHora": "2026-07-16T09:30:00",
+      "status": "cancelado"
+    },
+    {
+      "id": "agendamento-10",
+      "idAgendamento": 10,
+      "idCliente": 2,
+      "idProfissional": 1,
+      "idServico": 5,
+      "dataHora": "2026-08-05T09:00:00",
+      "status": "agendado"
+    },
+    {
+      "idAgendamento": 11,
+      "idCliente": 7,
+      "idProfissional": 1,
+      "idServico": 7,
+      "dataHora": "2026-08-01T13:10",
+      "status": "agendado",
+      "id": "dxC09N4WBgE"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

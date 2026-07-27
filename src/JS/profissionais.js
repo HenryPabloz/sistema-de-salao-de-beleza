@@ -35,11 +35,11 @@ async function carregarProfissionais() {
 function criarLinhaProfissional(profissional) {
     const linha = document.createElement('tr');
     linha.innerHTML =
-        '<td>' + profissional.nome + '</td>' +
-        '<td>' + capitalizarPrimeiraLetra(profissional.especialidade) + '</td>' +
+        '<td>' + escaparHTML(profissional.nome) + '</td>' +
+        '<td>' + escaparHTML(capitalizarPrimeiraLetra(profissional.especialidade)) + '</td>' +
         '<td><div class="acoes-tabela">' +
             '<button type="button" class="botao-icone botao-icone--editar" data-id="' + profissional.id + '" title="Editar profissional">' + ICONE_SVG_EDITAR + '</button>' +
-            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + profissional.id + '" title="Excluir profissional">' + ICONE_SVG_LIXEIRA + '</button>' +
+            '<button type="button" class="botao-icone botao-icone--perigo" data-id="' + profissional.id + '" title="Excluir profissional">' + ICONE_SVG_TESOURA_TRACEJADA + '</button>' +
         '</div></td>';
     return linha;
 }

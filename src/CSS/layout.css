@@ -618,11 +618,13 @@ textarea:focus-visible,
   border-radius: var(--raio-lg);
   padding: var(--espaco-lg);
   box-shadow: var(--sombra-card);
-  transition: border-color var(--transicao-padrao), transform var(--transicao-padrao);
+  transition: border-color var(--transicao-padrao), transform var(--transicao-padrao), box-shadow var(--transicao-padrao);
 }
 
 .card-section:hover {
-  border-color: rgba(var(--cor-destaque-rgb), 0.4);
+  transform: translateY(-5px);
+  border-color: var(--cor-destaque);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--cor-destaque-rgb), 0.35);
 }
 
 /* --- Section header (divisor visual) --- */

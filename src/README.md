@@ -20,7 +20,8 @@ Sistema completo e moderno para gestão de salão de beleza. Gerencie clientes, 
 - **JavaScript** (ES6+, vanilla)
 - **json-server** — API REST mock
 - **Bootstrap 5.3** — base customizada
-- **GSAP** — animações
+- **GSAP** — animações de sequência (cards de KPI, seções, contadores, barra vertical, transição entre páginas — sidebar sempre estática)
+- **Anime.js** — animação pontual de entrada das linhas de tabela
 - **Lenis** — smooth scroll
 - **SweetAlert2** — feedbacks e confirmações
 - **Lucide Icons** — ícones semânticos
@@ -152,6 +153,109 @@ O botão de tema está no rodapé da sidebar. A preferência é salva em `localS
 - **Tablet** (768–1023px): Sidebar lateral reduzida, 2 colunas
 - **Desktop** (1024px+): Sidebar fixa, layout multi-coluna
 
+## 🔐 Segurança
+
+### Proteção contra XSS (Cross-Site Scripting)
+
+Todo dado que vem da API (nome de cliente, profissional, serviço...) é
+tratado como não confiável antes de entrar na tela, porque nada impede que
+alguém cadastre um nome como `<img src=x onerror="alert(1)">` diretamente
+pela API (ex.: via `curl` ou DevTools), pulando o formulário.
+
+- **`escaparHTML(valor)`** (em `utils.js`) — converte `<`, `>`, `&`, `"` e `'`
+  nas entidades HTML equivalentes antes de qualquer valor dinâmico entrar em
+  um `innerHTML`. Usada em todas as linhas de tabela geradas por JS
+  (`dashboard.js`, `clientes.js`, `profissionais.js`, `servicos.js`,
+  `agendamentos.js`) nos campos de texto livre (nome, especialidade).
+- **Campos que não precisam de escape**: os preenchidos via `.textContent`
+  ou `.value` (opções de `<select>`, títulos de formulário, os próprios
+  `<input>`) já são seguros por natureza — essas propriedades nunca
+  interpretam HTML. CPF e telefone também são seguros mesmo sem escape,
+  porque `formataCPF`/`formataTelefone` só deixam dígitos e pontuação fixa
+  passarem, nunca o texto original.
+- **Mensagens do SweetAlert2** usam a opção `text` (não `html`), que também
+  escapa automaticamente — por isso os nomes de cliente/profissional/serviço
+  nos textos de confirmação já eram seguros mesmo antes desta revisão.
+- **Content Security Policy (CSP)** — presente em todas as páginas, mas
+  ajustada para o que o projeto realmente usa (a política genérica mais
+  comum bloquearia a aplicação inteira):
+  ```
+  default-src 'self';
+  script-src 'self' https://cdn.jsdelivr.net;
+  style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  img-src 'self' data:;
+  connect-src 'self' http://localhost:3000;
+  object-src 'none';
+  base-uri 'self';
+  ```
+  - `font-src`/`style-src` incluem o Google Fonts — sem isso a tipografia
+    (League Gothic, Inria Sans, Dancing Script) não carregaria.
+  - `connect-src` inclui `http://localhost:3000` — sem isso **nenhuma**
+    chamada `fetch` ao json-server funcionaria, e o site inteiro pareceria
+    quebrado.
+  - `style-src 'unsafe-inline'` é necessário porque GSAP, Anime.js e as
+    barras de progresso do projeto animam estilos inline (`element.style.*`)
+    — é assim que essas bibliotecas funcionam. `script-src` **não** tem
+    `'unsafe-inline'`, que é a parte que realmente importa contra XSS (é o
+    que impediria um `<script>` injetado de rodar).
+  - Por causa disso, o script que aplica o tema salvo antes da primeira
+    pintura da página (para não piscar o tema errado ao navegar) foi movido
+    de um `<script>` inline para o arquivo `JS/tema-inicial.js` — script
+    inline é exatamente o que uma CSP sem `'unsafe-inline'` bloqueia.
+  - **Efeito colateral no desenvolvimento**: o auto-reload do Live Server
+    (que usa um WebSocket) não está liberado no `connect-src`. Isso não
+    afeta o funcionamento do site, só significa que às vezes é preciso dar
+    um refresh manual depois de salvar um arquivo.
+
+### Por que não bloqueamos `<`, `>`, `&` no formulário
+
+Escapar na hora de **exibir** o dado (o que já fazemos) é a defesa
+recomendada contra XSS — bloquear esses caracteres na hora de **digitar**
+seria redundante e ainda rejeitaria nomes legítimos (ex.: "Salão & Cia").
+Por isso os formulários continuam validando só o que é regra de negócio
+(campo obrigatório, sem números no nome, CPF com 11 dígitos...), não
+caracteres de marcação.
+
+⚠️ **Nota**: este projeto é educacional e roda 100% no navegador. Em
+produção, validação e sanitização no servidor são obrigatórias — o
+front-end nunca deve ser a única camada de proteção.
+
+## ✨ Interatividade e animações
+
+GSAP e Anime.js dividem responsabilidades (não animam a mesma propriedade
+do mesmo elemento ao mesmo tempo — isso já causou um bug real neste
+projeto, documentado mais abaixo):
+
+- **GSAP** — sequências com controle fino, todas escopadas a
+  `.conteudo-principal` (a sidebar é sempre estática, nunca anima): cards de
+  KPI (fade + cascata), seções do dashboard, contadores numéricos animados,
+  preenchimento da barra vertical de cancelamento, e um fade-out rápido do
+  conteúdo ao clicar num link da sidebar (cliques com Ctrl/Cmd/Shift/botão do
+  meio não são interceptados, para não quebrar "abrir em nova aba").
+- **Anime.js** — só a entrada das linhas de tabela (fade + slide da
+  esquerda, em cascata), em todas as páginas com listagem.
+- **Lenis** — scroll suave em toda a aplicação.
+- **Hover dos cards** (`.card-section`, `.card-indicador`) — eleva 5px,
+  sombra mais forte e um leve glow amarelo na borda.
+
+Todas as animações checam `prefereReducedMotion()` (em `utils.js`) antes de
+rodar — quem ativou "reduzir movimento" no sistema operacional simplesmente
+vê o conteúdo já no lugar final, sem nenhuma das transições acima.
+
+**Lição registrada**: os cards de KPI e as seções do dashboard chegaram a
+animar com `y` (e o KPI também com `scale`) além do fade. Isolamos com
+testes automatizados (Playwright, várias rodadas, com a aba em primeiro
+plano para descartar throttling) e confirmamos: sempre que o GSAP anima
+`transform` (`y` ou `scale`) em **vários elementos ao mesmo tempo** — com ou
+sem `stagger` — alguns elementos ficam com um valor residual que nunca
+chega ao destino (o `onComplete` dispara normalmente, só o valor aplicado
+fica errado). Resultado visível: cards de alturas/posições diferentes,
+parecendo "tortos". Animar **só `autoAlpha`** (opacidade) nesses grupos
+resolveu de vez — testamos 5 recargas seguidas sem nenhuma falha. Se um dia
+quiser reintroduzir `y`/`scale` em grupos de elementos, teste bastante
+antes de confiar.
+
 ## 🐛 Troubleshooting
 
 ### "Failed to fetch" nos console
@@ -163,8 +267,16 @@ O botão de tema está no rodapé da sidebar. A preferência é salva em `localS
 - Teste em modo anônimo/privado
 
 ### Animações não aparecem
-- Verifique se GSAP foi carregado (abra DevTools → Console, procure por erros)
+- Verifique se GSAP/Anime.js/Lenis foram carregados (abra DevTools → Console, procure por erros)
 - Se tiver ativado "Prefers reduced motion" nas preferências de acessibilidade, as animações serão desligadas intencionalmente
+
+### "Refused to ... because it violates the following Content Security Policy directive"
+- Isso aparece no console se você adicionar um novo CDN, fonte ou endpoint
+  sem atualizar a meta tag de CSP em `HTML/*.html`. A CSP deste projeto só
+  libera `cdn.jsdelivr.net` (scripts/estilos), `fonts.googleapis.com` +
+  `fonts.gstatic.com` (fontes) e `http://localhost:3000` (API). Adicionando
+  uma biblioteca nova? Inclua a origem dela na diretiva certa (`script-src`,
+  `style-src`, `connect-src`...) nas 5 páginas.
 
 ## 📝 Dados mock
 
