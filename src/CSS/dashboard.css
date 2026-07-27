@@ -48,12 +48,13 @@
   border-radius: var(--raio-lg);
   box-shadow: var(--sombra-card);
   overflow: hidden;
-  transition: transform var(--transicao-padrao), border-color var(--transicao-padrao);
+  transition: transform var(--transicao-padrao), border-color var(--transicao-padrao), box-shadow var(--transicao-padrao);
 }
 
 .card-indicador:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px);
   border-color: var(--cor-destaque);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(var(--cor-destaque-rgb), 0.35);
 }
 
 .card-indicador__icone {
@@ -160,7 +161,9 @@
   width: 100%;
   min-height: 3px;
   background: linear-gradient(180deg, var(--cor-destaque-hover), var(--cor-destaque));
-  transition: height var(--transicao-suave);
+  /* Sem transition aqui de propósito: o preenchimento já é animado via GSAP
+     (animarBarraVertical, em animacoes.js). CSS + GSAP competindo pela mesma
+     propriedade foi exatamente o bug que travou os cards de KPI antes. */
 }
 
 @media (max-width: 767px) {
