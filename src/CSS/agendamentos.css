@@ -1,0 +1,54 @@
+/* ============================================================================
+   AGENDAMENTOS.CSS — estilos exclusivos da página de Agendamentos.
+   ============================================================================ */
+
+.d-none { display: none !important; }
+
+.cabecalho-pagina__com-voltar {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-md);
+}
+
+.formulario-agendamento {
+  max-width: 620px;
+}
+
+.formulario-agendamento__linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-md);
+}
+
+.formulario-agendamento__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-sm);
+  margin-top: var(--espaco-md);
+  padding-top: var(--espaco-md);
+  border-top: 1px solid var(--cor-borda);
+}
+
+.aviso-cadastro-ausente {
+  padding: var(--espaco-sm) var(--espaco-md);
+  margin-bottom: var(--espaco-md);
+  background-color: rgba(var(--cor-destaque-rgb), 0.1);
+  border: 1px solid rgba(var(--cor-destaque-rgb), 0.35);
+  border-radius: var(--raio-md);
+  color: var(--cor-destaque);
+  font-size: var(--tamanho-body-sm);
+}
+
+@media (max-width: 767px) {
+  .formulario-agendamento__linha {
+    grid-template-columns: 1fr;
+  }
+
+  .formulario-agendamento__acoes {
+    flex-direction: column-reverse;
+  }
+
+  .formulario-agendamento__acoes button {
+    width: 100%;
+  }
+}

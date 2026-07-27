@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="escuro">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      var temaSalvo = localStorage.getItem("temaSalaoAmbar");
+      if (temaSalvo) {
+        document.documentElement.dataset.tema = temaSalvo;
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Salão Âmbar</title>
+  <meta name="description" content="Visão consolidada do negócio: faturamento, agendamentos e rankings do salão.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/layout.css">
+  <link rel="stylesheet" href="../CSS/dashboard.css">
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- ================= MENU MOBILE (100% CSS, sem JS) ================= -->
+    <input type="checkbox" id="menuToggleCheckbox" class="menu-toggle-checkbox" aria-label="Abrir ou fechar menu de navegação">
+    <label for="menuToggleCheckbox" class="botao-menu-mobile">
+      <svg class="icone-abrir" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <svg class="icone-fechar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </label>
+    <label for="menuToggleCheckbox" class="overlay-sidebar" aria-hidden="true"></label>
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" id="sidebarPrincipal" data-pagina-atual="dashboard">
+      <div class="sidebar__marca">
+        <div class="sidebar__marca-icone">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/></svg>
+        </div>
+        <div class="sidebar__marca-texto">
+          <span class="sidebar__marca-nome">Salão Âmbar</span>
+          <span class="sidebar__marca-desde">since 2013</span>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav" aria-label="Navegação principal">
+        <a href="index.html" class="sidebar__link ativo" data-pagina="dashboard" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a href="clientes.html" class="sidebar__link" data-pagina="clientes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17" cy="7" r="2.4"/><path d="M15.5 14.2c2.6.3 4.5 2.3 4.5 5.3"/></svg>
+          Clientes
+        </a>
+        <a href="profissionais.html" class="sidebar__link" data-pagina="profissionais">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c0-4.1 3.4-6.5 7.5-6.5s7.5 2.4 7.5 6.5"/></svg>
+          Profissionais
+        </a>
+        <a href="servicos.html" class="sidebar__link" data-pagina="servicos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.2 7.5 20 19M20 5 8.2 16.5"/></svg>
+          Serviços
+        </a>
+        <a href="agendamentos.html" class="sidebar__link" data-pagina="agendamentos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></svg>
+          Agendamentos
+        </a>
+      </nav>
+
+      <div class="sidebar__rodape">
+        <button class="botao-tema" id="botaoAlternarTema" type="button" aria-label="Alternar tema claro/escuro" aria-pressed="false">
+          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7"/></svg>
+          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5a8.5 8.5 0 1 1-8-11.4 7 7 0 0 0 8 11.4z"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ================= CONTEÚDO ================= -->
+    <main class="conteudo-principal" id="conteudoPrincipal">
+
+      <header class="cabecalho-pagina">
+        <div>
+          <span class="eyebrow">Visão geral do negócio</span>
+          <h1>Dashboard</h1>
+        </div>
+
+        <div class="barra-filtros">
+          <div class="form-group">
+            <label for="filtroEspecialidade">Especialidade</label>
+            <select id="filtroEspecialidade" class="input-field">
+              <option value="">Todas as especialidades</option>
+              <option value="cabeleireiro">Cabeleireiro</option>
+              <option value="manicure">Manicure</option>
+              <option value="esteticista">Esteticista</option>
+              <option value="maquiador">Maquiador</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filtroStatusAgendamento">Status do agendamento</label>
+            <select id="filtroStatusAgendamento" class="input-field">
+              <option value="">Todos os status</option>
+              <option value="agendado">Agendado</option>
+              <option value="realizado">Realizado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- Estado de carregamento -->
+      <div class="estado-tela ativo" id="estadoCarregandoDashboard">
+        <div class="spinner" role="status" aria-label="Carregando"></div>
+        <p class="estado-tela__texto">Carregando indicadores do salão…</p>
+      </div>
+
+      <!-- Estado de erro -->
+      <div class="estado-tela estado-tela--erro" id="estadoErroDashboard">
+        <svg class="estado-tela__icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        <h3 class="estado-tela__titulo">Não foi possível carregar</h3>
+        <p class="estado-tela__texto">Falha ao carregar dados do dashboard. Tente novamente mais tarde.</p>
+        <button class="btn-secondary" id="botaoRecarregarDashboard" type="button">Tentar novamente</button>
+      </div>
+
+      <!-- Conteúdo real (populado via JS a partir dos 4 endpoints) -->
+      <div id="conteudoDashboard" class="d-none">
+
+        <!-- Cards indicadores (KPIs): 4 colunas desktop / 2 tablet / 1 mobile -->
+        <section class="grade-metricas" aria-label="Indicadores gerais">
+          <div class="card-indicador card-indicador--agendados anima-entrada">
+            <div class="card-indicador__icone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            </div>
+            <p class="card-indicador__valor" id="valorTotalAgendados">–</p>
+            <p class="card-indicador__label">Agendados</p>
+          </div>
+
+          <div class="card-indicador card-indicador--realizados anima-entrada">
+            <div class="card-indicador__icone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.3 2.3 4.7-4.8"/></svg>
+            </div>
+            <p class="card-indicador__valor" id="valorTotalRealizados">–</p>
+            <p class="card-indicador__label">Realizados</p>
+          </div>
+
+          <div class="card-indicador card-indicador--cancelados anima-entrada">
+            <div class="card-indicador__icone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+            </div>
+            <p class="card-indicador__valor" id="valorTotalCancelados">–</p>
+            <p class="card-indicador__label">Cancelados</p>
+          </div>
+
+          <div class="card-indicador card-indicador--faturamento anima-entrada">
+            <div class="card-indicador__icone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5v19M17 6.8c0-1.8-2-3-5-3s-5 1.2-5 3 2 2.8 5 3.2 5 1.6 5 3.4-2 3.1-5 3.1-5-1.1-5-2.9"/></svg>
+            </div>
+            <p class="card-indicador__valor card-indicador__valor--moeda" id="valorFaturamentoTotal">–</p>
+            <p class="card-indicador__label">Faturamento total</p>
+          </div>
+        </section>
+
+        <!-- Seção 1 (mais importante): Faturamento por profissional -->
+        <section class="card-section anima-entrada secao-espacada">
+          <div class="section-header"><h2>Faturamento por profissional</h2></div>
+          <div class="tabela-wrapper">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Profissional</th>
+                  <th>Especialidade</th>
+                  <th>Faturamento</th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabelaFaturamentoProfissional">
+                <!-- linhas inseridas via JS -->
+              </tbody>
+            </table>
+          </div>
+          <p class="estado-tela__texto texto-vazio-secao" id="mensagemVaziaFaturamento" style="display:none;">Nenhum dado disponível para esta seção.</p>
+        </section>
+
+        <!-- Seção 2: Serviços mais agendados + Taxa de cancelamento (lado a lado) -->
+        <section class="grade-dupla secao-espacada">
+          <div class="card-section anima-entrada">
+            <div class="section-header"><h2>Serviços mais agendados</h2></div>
+            <div class="tabela-wrapper">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Serviço</th>
+                    <th>Agendamentos</th>
+                  </tr>
+                </thead>
+                <tbody id="corpoTabelaRankingServicos">
+                  <!-- linhas inseridas via JS -->
+                </tbody>
+              </table>
+            </div>
+            <p class="estado-tela__texto texto-vazio-secao" id="mensagemVaziaRankingServicos" style="display:none;">Nenhum dado disponível para esta seção.</p>
+          </div>
+
+          <div class="card-section anima-entrada">
+            <div class="section-header"><h2>Taxa de cancelamento</h2></div>
+            <div class="taxa-cancelamento">
+              <span class="taxa-cancelamento__numero" id="valorTaxaCancelamento">0%</span>
+              <div class="barra-vertical">
+                <div class="barra-vertical__preenchimento" id="barraTaxaCancelamento" style="height: 0%;"></div>
+              </div>
+              <p class="texto-auxiliar" id="textoContagemCancelamento">Cancelados: 0 / Total: 0</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Seção 3 (menos crítica): Clientes mais frequentes -->
+        <section class="card-section anima-entrada secao-espacada">
+          <div class="section-header"><h2>Clientes mais frequentes</h2></div>
+          <div class="tabela-wrapper">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Telefone</th>
+                  <th>Agendamentos realizados</th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabelaClientesFrequentes">
+                <!-- linhas inseridas via JS -->
+              </tbody>
+            </table>
+          </div>
+          <p class="estado-tela__texto texto-vazio-secao" id="mensagemVaziaClientesFrequentes" style="display:none;">Nenhum dado disponível para esta seção.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js"></script>
+  <script src="../JS/utils.js"></script>
+  <script src="../JS/api.js"></script>
+  <script src="../JS/navbar.js"></script>
+  <script src="../JS/animacoes.js"></script>
+  <script src="../JS/dashboard.js"></script>
+</body>
+</html>

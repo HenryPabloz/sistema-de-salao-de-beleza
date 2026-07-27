@@ -1,0 +1,168 @@
+/* ============================================================================
+   DASHBOARD.CSS — estilos exclusivos da página de Dashboard.
+   Hierarquia: KPIs no topo → Faturamento por profissional → Serviços mais
+   agendados + Taxa de cancelamento lado a lado → Clientes mais frequentes.
+   ============================================================================ */
+
+.secao-espacada {
+  margin-top: var(--espaco-lg);
+}
+
+.texto-vazio-secao {
+  padding: var(--espaco-md) 0 0;
+  text-align: center;
+}
+
+.d-none { display: none !important; }
+
+/* ----------------------------------------------------------------------------
+   Grid dos 4 cards de KPI: 4 colunas desktop / 2 tablet / 1 mobile
+   ---------------------------------------------------------------------------- */
+.grade-metricas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-md);
+}
+
+@media (max-width: 1023px) {
+  .grade-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 767px) {
+  .grade-metricas { grid-template-columns: minmax(0, 1fr); gap: var(--espaco-sm); }
+}
+
+/* ----------------------------------------------------------------------------
+   Card de KPI — layout vertical, altura mínima fixa, conteúdo sempre contido
+   ---------------------------------------------------------------------------- */
+.card-indicador {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  padding: var(--espaco-md);
+  text-align: center;
+  background-color: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-card);
+  overflow: hidden;
+  transition: transform var(--transicao-padrao), border-color var(--transicao-padrao);
+}
+
+.card-indicador:hover {
+  transform: translateY(-3px);
+  border-color: var(--cor-destaque);
+}
+
+.card-indicador__icone {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--raio-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: var(--espaco-xs);
+}
+
+.card-indicador__icone svg { width: 26px; height: 26px; }
+
+.card-indicador__valor {
+  font-family: var(--fonte-titulo);
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--cor-texto-principal);
+}
+
+.card-indicador__valor--moeda {
+  font-size: 1.75rem;
+}
+
+.card-indicador__label {
+  font-size: var(--tamanho-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cor-texto-secundario);
+  margin-top: var(--espaco-xs);
+}
+
+/* Cores por métrica — mesma paleta semântica usada nos badges de status */
+.card-indicador--agendados .card-indicador__icone { background-color: rgba(59, 130, 246, 0.15); color: var(--cor-info); }
+.card-indicador--agendados .card-indicador__valor { color: var(--cor-info); }
+
+.card-indicador--realizados .card-indicador__icone { background-color: rgba(16, 185, 129, 0.15); color: var(--cor-sucesso); }
+.card-indicador--realizados .card-indicador__valor { color: var(--cor-sucesso); }
+
+.card-indicador--cancelados .card-indicador__icone { background-color: rgba(239, 68, 68, 0.15); color: var(--cor-erro); }
+.card-indicador--cancelados .card-indicador__valor { color: var(--cor-erro); }
+
+.card-indicador--faturamento .card-indicador__icone { background-color: rgba(var(--cor-destaque-rgb), 0.15); color: var(--cor-destaque); }
+.card-indicador--faturamento .card-indicador__valor { color: var(--cor-destaque); }
+
+@media (max-width: 767px) {
+  .card-indicador { min-height: 120px; }
+  .card-indicador__valor { font-size: 1.75rem; }
+  .card-indicador__valor--moeda { font-size: 1.4rem; }
+}
+
+/* ----------------------------------------------------------------------------
+   Grid de 2 colunas (Serviços mais agendados + Taxa de cancelamento)
+   ---------------------------------------------------------------------------- */
+.grade-dupla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--espaco-md);
+}
+
+@media (max-width: 1023px) {
+  .grade-dupla { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Tabela de 2 colunas: não precisa do min-width genérico de 640px,
+   que só serve para tabelas maiores (3+ colunas) noutras seções. */
+.grade-dupla .table-custom {
+  min-width: 0;
+}
+
+/* ----------------------------------------------------------------------------
+   Taxa de cancelamento — número + barra VERTICAL
+   ---------------------------------------------------------------------------- */
+.taxa-cancelamento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--espaco-sm);
+  padding: var(--espaco-md) 0;
+}
+
+.taxa-cancelamento__numero {
+  font-family: var(--fonte-titulo);
+  font-size: 2.5rem;
+  color: var(--cor-destaque);
+  line-height: 1;
+}
+
+.barra-vertical {
+  width: 52px;
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  background-color: var(--cor-fundo-secundario);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  overflow: hidden;
+}
+
+.barra-vertical__preenchimento {
+  width: 100%;
+  min-height: 3px;
+  background: linear-gradient(180deg, var(--cor-destaque-hover), var(--cor-destaque));
+  transition: height var(--transicao-suave);
+}
+
+@media (max-width: 767px) {
+  .barra-vertical { height: 150px; }
+}

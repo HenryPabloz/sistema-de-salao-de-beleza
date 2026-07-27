@@ -1,0 +1,35 @@
+/* ============================================================================
+   CLIENTES.CSS — estilos exclusivos da página de Clientes.
+   ============================================================================ */
+
+.d-none { display: none !important; }
+
+.cabecalho-pagina__com-voltar {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-md);
+}
+
+/* --- Formulário de cadastro/edição --- */
+.formulario-cliente {
+  max-width: 520px;
+}
+
+.formulario-cliente__acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-sm);
+  margin-top: var(--espaco-md);
+  padding-top: var(--espaco-md);
+  border-top: 1px solid var(--cor-borda);
+}
+
+@media (max-width: 767px) {
+  .formulario-cliente__acoes {
+    flex-direction: column-reverse;
+  }
+
+  .formulario-cliente__acoes button {
+    width: 100%;
+  }
+}
